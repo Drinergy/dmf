@@ -1,0 +1,193 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\Program;
+
+class ProgramSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $programs = [
+            // Review Packages
+            [
+                'slug' => 'package-a',
+                'name' => 'Package A',
+                'category' => 'Review Packages',
+                'tag' => 'Complete Package',
+                'inclusions' => ['Online Lecture Review (₱15,500)', 'Online Final Coaching (₱7,000)', 'Face-to-Face Practical (₱18,000)'],
+                'price_full' => 40500,
+                'price_dp' => 18000,
+                'early_bird_label' => '₱38,500 if settled on or before May 15, 2026',
+                'price_early' => 38500,
+                'early_deadline' => '2026-05-15',
+                'sort_order' => 10,
+            ],
+            [
+                'slug' => 'package-b',
+                'name' => 'Package B',
+                'category' => 'Review Packages',
+                'tag' => 'Hybrid Package',
+                'inclusions' => ['Hybrid Lecture Review (₱18,000)', 'Online Final Coaching (₱7,000)', 'Face-to-Face Practical (₱18,000)'],
+                'price_full' => 43000,
+                'price_dp' => 20000,
+                'early_bird_label' => '₱41,000 if settled on or before May 30, 2026',
+                'price_early' => 41000,
+                'early_deadline' => '2026-05-30',
+                'sort_order' => 20,
+            ],
+            [
+                'slug' => 'package-c',
+                'name' => 'Package C',
+                'category' => 'Review Packages',
+                'tag' => 'Lecture + Coaching',
+                'inclusions' => ['Online Lecture Review (₱15,500)', 'Online Final Coaching (₱7,000)'],
+                'price_full' => 22500,
+                'price_dp' => 13000,
+                'early_bird_label' => '₱21,500 if settled on or before May 15, 2026',
+                'price_early' => 21500,
+                'early_deadline' => '2026-05-15',
+                'sort_order' => 30,
+            ],
+            [
+                'slug' => 'package-d',
+                'name' => 'Package D',
+                'category' => 'Review Packages',
+                'tag' => 'Lecture + Practical',
+                'inclusions' => ['Hybrid Lecture Review (₱18,000)', 'Face-to-Face Practical (₱18,000)'],
+                'price_full' => 36000,
+                'price_dp' => 17000,
+                'early_bird_label' => '₱35,000 if settled on or before May 30, 2026',
+                'price_early' => 35000,
+                'early_deadline' => '2026-05-30',
+                'sort_order' => 40,
+            ],
+            [
+                'slug' => 'package-e',
+                'name' => 'Package E',
+                'category' => 'Review Packages',
+                'tag' => 'Lecture + Practical',
+                'inclusions' => ['Online Lecture Review (₱15,500)', 'Face-to-Face Practical (₱18,000)'],
+                'price_full' => 33500,
+                'price_dp' => 15000,
+                'early_bird_label' => '₱32,500 if settled on or before May 15, 2026',
+                'price_early' => 32500,
+                'early_deadline' => '2026-05-15',
+                'sort_order' => 50,
+            ],
+            [
+                'slug' => 'package-f',
+                'name' => 'Package F',
+                'category' => 'Review Packages',
+                'tag' => 'Lecture + Coaching',
+                'inclusions' => ['Hybrid Lecture Review (₱18,000)', 'Online Final Coaching (₱7,000)'],
+                'price_full' => 25000,
+                'price_dp' => 12000,
+                'early_bird_label' => '₱24,000 if settled on or before May 30, 2026',
+                'price_early' => 24000,
+                'early_deadline' => '2026-05-30',
+                'sort_order' => 60,
+            ],
+
+            // Individual Programs (Theoretical)
+            [
+                'slug' => 'hybrid-intensive',
+                'name' => 'Hybrid Face-to-Face Intensive Lecture Review',
+                'category' => 'Individual Programs (Theoretical)',
+                'tag' => 'July-Nov (Sat-Sun)',
+                'inclusions' => ['Duration: July to November 2026', 'Schedule: Sat & Sun (9am-5pm) + Wed (Online)', 'Mode: Hybrid Face-to-Face', 'Max Capacity: 150 students'],
+                'price_full' => 18000,
+                'price_dp' => 10000,
+                'early_bird_label' => null,
+                'price_early' => null,
+                'early_deadline' => null,
+                'sort_order' => 70,
+            ],
+            [
+                'slug' => 'online-comprehensive',
+                'name' => 'Online Comprehensive Lecture Review',
+                'category' => 'Individual Programs (Theoretical)',
+                'tag' => 'June-Nov (Tue,Thu,Sat)',
+                'inclusions' => ['Duration: June to November 2026', 'Schedule: Tue, Thu, Sat (5pm-9pm)', 'Mode: Pure Online'],
+                'price_full' => 15500,
+                'price_dp' => 8000,
+                'early_bird_label' => null,
+                'price_early' => null,
+                'early_deadline' => null,
+                'sort_order' => 80,
+            ],
+            [
+                'slug' => 'online-final-coaching',
+                'name' => 'Online Final Coaching',
+                'category' => 'Individual Programs (Theoretical)',
+                'tag' => 'Sept-Nov (Mon,Wed,Fri)',
+                'inclusions' => ['Duration: September to November 2026', 'Schedule: Mon, Wed, Fri (11am-4pm)', 'Mode: Pure Online'],
+                'price_full' => 7000,
+                'price_dp' => 4000,
+                'early_bird_label' => null,
+                'price_early' => null,
+                'early_deadline' => null,
+                'sort_order' => 90,
+            ],
+
+            // Individual Programs (Practical)
+            [
+                'slug' => 'practical-aug',
+                'name' => 'Full Course Face-to-Face Practical Review',
+                'category' => 'Individual Programs (Practical)',
+                'tag' => 'August Batch',
+                'inclusions' => ['Schedule: August 2026', 'Mode: Face-to-Face'],
+                'price_full' => 18000,
+                'price_dp' => 5000,
+                'early_bird_label' => null,
+                'price_early' => null,
+                'early_deadline' => null,
+                'sort_order' => 100,
+            ],
+            [
+                'slug' => 'practical-sep',
+                'name' => 'Full Course Face-to-Face Practical Review',
+                'category' => 'Individual Programs (Practical)',
+                'tag' => 'September Batch',
+                'inclusions' => ['Schedule: September 2026', 'Mode: Face-to-Face'],
+                'price_full' => 18000,
+                'price_dp' => 5000,
+                'early_bird_label' => null,
+                'price_early' => null,
+                'early_deadline' => null,
+                'sort_order' => 110,
+            ],
+            [
+                'slug' => 'practical-oct',
+                'name' => 'Full Course Face-to-Face Practical Review',
+                'category' => 'Individual Programs (Practical)',
+                'tag' => 'October Batch',
+                'inclusions' => ['Schedule: October 2026', 'Mode: Face-to-Face'],
+                'price_full' => 18000,
+                'price_dp' => 5000,
+                'early_bird_label' => null,
+                'price_early' => null,
+                'early_deadline' => null,
+                'sort_order' => 120,
+            ],
+            [
+                'slug' => 'practical-octnov',
+                'name' => 'Full Course Face-to-Face Practical Review',
+                'category' => 'Individual Programs (Practical)',
+                'tag' => 'Oct-Nov Batch',
+                'inclusions' => ['Schedule: October-November 2026', 'Mode: Face-to-Face'],
+                'price_full' => 18000,
+                'price_dp' => 5000,
+                'early_bird_label' => null,
+                'price_early' => null,
+                'early_deadline' => null,
+                'sort_order' => 130,
+            ],
+        ];
+
+        foreach ($programs as $p) {
+            Program::firstOrCreate(['slug' => $p['slug']], $p);
+        }
+    }
+}

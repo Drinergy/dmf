@@ -1,0 +1,170 @@
+/* =============================================================
+   DMF Dental Training Center — Enrollment Stylesheet
+   enrollment.css
+   ============================================================= */
+
+/* ── Base ─────────────────────────────────────────────────── */
+body { font-family: 'Inter', sans-serif; }
+
+/* ── Page entrance animation ──────────────────────────────── */
+.page-fade-in {
+    animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Custom focus ring ────────────────────────────────────── */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13, 141, 232, 0.15);
+}
+
+/* ── Progress step utility classes ───────────────────────── */
+.step-active  { background: #3c559c; color: #fff; border-color: #3c559c; }
+.step-done    { background: #e5ebf8; color: #32457e; border-color: #9db4e1; }
+.step-pending { background: #fff;    color: #9ca3af; border-color: #e5e7eb; }
+
+
+/* =============================================================
+   LANDING PAGE
+   ============================================================= */
+
+/* Gradient hero background */
+.hero-gradient {
+    background: linear-gradient(135deg, #151b32 0%, #263255 100%);
+}
+
+/* Feature card hover lift */
+.feature-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(13, 141, 232, 0.12);
+}
+
+/* Program card hover */
+.program-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.program-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(13, 141, 232, 0.10);
+    border-color: #0d8de8;
+}
+
+/* Stat counter tabular nums */
+.stat-number { font-variant-numeric: tabular-nums; }
+
+
+/* =============================================================
+   PAYMENT PAGE
+   ============================================================= */
+
+/* Animated security badge */
+.security-badge {
+    animation: pulse-soft 2.5s ease-in-out infinite;
+}
+@keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.75; }
+}
+
+/* Payment method toggle card */
+.pay-opt {
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.pay-opt:has(input:checked) {
+    border-color: #0d8de8;
+    background-color: #f0f7ff;
+    box-shadow: 0 0 0 2px rgba(13, 141, 232, 0.12);
+}
+.pay-opt:hover { border-color: #7cc5fb; }
+
+
+/* =============================================================
+   ENROLLMENT FORM PAGE
+   ============================================================= */
+
+/* Text input / select base */
+.form-input {
+    display: block;
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: #1e293b;
+    background-color: #fff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 0.75rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.form-input:focus {
+    border-color: #4c6ebb;
+    box-shadow: 0 0 0 3px rgba(76, 110, 187, 0.12);
+    outline: none;
+}
+
+/* Custom select arrow */
+select.form-input {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.125rem;
+    padding-right: 2.5rem;
+    cursor: pointer;
+}
+
+/* Program option & payment type selectable cards */
+.program-opt,
+.pay-type-opt {
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.program-opt:has(input:checked),
+.pay-type-opt:has(input:checked) {
+    border-color: #4c6ebb;
+    background-color: #f4f6fc;
+    box-shadow: 0 0 0 2px rgba(76, 110, 187, 0.15);
+}
+.program-opt:hover,
+.pay-type-opt:hover { border-color: #9db4e1; }
+
+
+/* =============================================================
+   SUCCESS PAGE
+   ============================================================= */
+
+/* Confetti-like entrance */
+.success-card {
+    animation: successBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes successBounce {
+    0%   { opacity: 0; transform: scale(0.8) translateY(20px); }
+    100% { opacity: 1; transform: scale(1)   translateY(0); }
+}
+
+/* Icon check animation */
+.check-circle {
+    animation: checkIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s both;
+}
+@keyframes checkIn {
+    0%   { transform: scale(0) rotate(-45deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
+
+/* Ripple ring */
+.ripple-ring {
+    animation: ripple 2.5s ease-out infinite;
+}
+@keyframes ripple {
+    0%   { transform: scale(1);   opacity: 0.6; }
+    100% { transform: scale(1.9); opacity: 0;   }
+}
