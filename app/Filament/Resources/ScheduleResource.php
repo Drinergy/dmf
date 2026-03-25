@@ -19,7 +19,12 @@ class ScheduleResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
     protected static ?string $navigationLabel = 'Schedules';
     protected static ?int $navigationSort = 30;
-    protected static bool $shouldRegisterNavigation = true;
+    protected static bool $shouldRegisterNavigation = false;
+
+    public static function canViewAny(): bool
+    {
+        return app()->environment('local');
+    }
 
     public static function form(Form $form): Form
     {

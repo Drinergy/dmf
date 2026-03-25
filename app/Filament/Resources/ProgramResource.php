@@ -19,7 +19,12 @@ class ProgramResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationLabel = 'Programs';
     protected static ?int $navigationSort = 20;
-    protected static bool $shouldRegisterNavigation = true;
+    protected static bool $shouldRegisterNavigation = false;
+
+    public static function canViewAny(): bool
+    {
+        return app()->environment('local');
+    }
 
     public static function form(Form $form): Form
     {

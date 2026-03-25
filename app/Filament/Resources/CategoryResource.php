@@ -17,7 +17,12 @@ class CategoryResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-tag';
     protected static ?string $navigationLabel = 'Categories';
     protected static ?int $navigationSort = 10;
-    protected static bool $shouldRegisterNavigation = true;
+    protected static bool $shouldRegisterNavigation = false;
+
+    public static function canViewAny(): bool
+    {
+        return app()->environment('local');
+    }
 
     public static function form(Form $form): Form
     {
