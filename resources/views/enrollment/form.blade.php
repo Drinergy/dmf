@@ -202,15 +202,53 @@
                         <label class="program-opt relative flex flex-col h-full rounded-xl border-2 border-gray-100 p-4 bg-white" for="prog-{{ $prog->slug }}">
                             <input type="radio" id="prog-{{ $prog->slug }}" name="program" value="{{ $prog->slug }}" class="sr-only" required
                                    data-full="{{ $activeFullPrice }}" data-dp="{{ $prog->price_dp }}"
+                                   data-schedules='@json($prog->schedules->map(fn($s) => ["id" => $s->id, "label" => $s->label, "mode" => $s->mode]))'
                                    {{ old('program', $oldData['program'] ?? (request('program') === $prog->slug ? $prog->slug : '')) === $prog->slug ? 'checked' : '' }}>
                             
                             <p class="font-bold text-brand-900 text-sm mb-2 leading-tight pr-4">{{ $prog->name }}</p>
-                            
-                            <ul class="text-gray-500 text-[11px] mb-4 leading-snug space-y-1 flex-1">
-                                @foreach($prog->inclusions as $inc)
-                                    <li class="flex items-start gap-1"><span class="text-brand-400">•</span> <span>{{ $inc }}</span></li>
-                                @endforeach
-                            </ul>
+
+                            {{-- Batch summary (from schedules) --}}
+                            @php
+                                $activeSchedules = $prog->schedules ?? collect();
+                                $firstSchedule = $activeSchedules->first();
+                            @endphp
+                            @if($activeSchedules->count() > 0 && $firstSchedule)
+                                <div class="text-[11px] text-gray-600 mb-3 leading-snug space-y-1.5 flex-1">
+                                    <div class="flex items-start gap-1">
+                                        <span class="text-brand-400">•</span>
+                                        <span><span class="font-semibold text-gray-700">Batch:</span> {{ $firstSchedule->label }}</span>
+                                    </div>
+                                    @if(!empty($firstSchedule->mode))
+                                        <div class="flex items-start gap-1">
+                                            <span class="text-brand-400">•</span>
+                                            <span><span class="font-semibold text-gray-700">Mode:</span> {{ $firstSchedule->mode }}</span>
+                                        </div>
+                                    @endif
+                                    @if(!empty($firstSchedule->slots))
+                                        <div class="flex items-start gap-1">
+                                            <span class="text-brand-400">•</span>
+                                            <span><span class="font-semibold text-gray-700">Max Capacity:</span> {{ $firstSchedule->slots }} students</span>
+                                        </div>
+                                    @endif
+                                    @if($activeSchedules->count() > 1)
+                                        <div class="flex items-start gap-1">
+                                            <span class="text-brand-400">•</span>
+                                            <span class="text-gray-500">
+                                                <span class="font-semibold text-gray-700">{{ $activeSchedules->count() }}</span> batches available — select your batch below.
+                                            </span>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
+
+                            {{-- Curriculum / package inclusions --}}
+                            @if(!empty($prog->inclusions) && is_array($prog->inclusions) && count($prog->inclusions) > 0)
+                                <ul class="text-gray-500 text-[11px] mb-4 leading-snug space-y-1 flex-1">
+                                    @foreach($prog->inclusions as $inc)
+                                        <li class="flex items-start gap-1"><span class="text-brand-400">•</span> <span>{{ $inc }}</span></li>
+                                    @endforeach
+                                </ul>
+                            @endif
                             
                             <div class="flex items-start gap-4 border-t border-gray-50 pt-3 mt-auto">
                                 <div class="flex-1">
@@ -242,11 +280,27 @@
                 @endforeach
             </div>
         </div>
-        
-        {{-- 5. Payment Type Option --}}
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-soft p-6 md:p-8 mb-8" id="payment-options-section" style="display: none;">
+
+        {{-- 5. Select batch (if applicable) --}}
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-soft p-6 md:p-8 mb-6" id="schedule-section" style="display:none;">
             <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <span class="w-6 h-6 rounded bg-brand-50 text-brand-600 flex items-center justify-center text-sm">5</span>
+                Select batch (if applicable)
+            </h2>
+
+            <label class="block text-sm font-medium text-gray-700 mb-1">Select Batch</label>
+            <select name="schedule_id" id="schedule_id" class="form-input" data-old="{{ old('schedule_id', $oldData['schedule_id'] ?? '') }}">
+                <option value="">Select a batch</option>
+            </select>
+            @error('schedule_id')
+                <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+            @enderror
+        </div>
+        
+        {{-- 6. Payment Type Option --}}
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-soft p-6 md:p-8 mb-8" id="payment-options-section" style="display: none;">
+            <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <span class="w-6 h-6 rounded bg-brand-50 text-brand-600 flex items-center justify-center text-sm">6</span>
                 Payment Preference
             </h2>
             <p class="text-sm text-gray-500 mb-4">Choose how you would like to settle your balance today.</p>

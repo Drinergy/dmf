@@ -2,7 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Program;
+use App\Models\Schedule;
 use Illuminate\Database\Seeder;
 
 class ScheduleSeeder extends Seeder
@@ -14,37 +15,71 @@ class ScheduleSeeder extends Seeder
     {
         $schedules = [
             [
-                'name' => 'Weekday Morning',
-                'slug' => 'weekday_am',
-                'time_description' => 'Mon–Fri | 8:00 AM – 12:00 NN',
-                'mode' => 'Face-to-Face & Online',
-                'is_active' => true,
+                'program_slug' => 'hybrid-intensive',
+                'label' => 'July to November 2026 | Saturday and Sunday (9am to 5pm) + few Wednesday sessions (Online)',
+                'mode' => 'Hybrid Face-to-Face',
+                'slots' => 150,
             ],
             [
-                'name' => 'Weekday Afternoon',
-                'slug' => 'weekday_pm',
-                'time_description' => 'Mon–Fri | 1:00 PM – 5:00 PM',
-                'mode' => 'Face-to-Face & Online',
-                'is_active' => true,
+                'program_slug' => 'online-comprehensive',
+                'label' => 'June to November 2026 | Tuesday, Thursday, Saturday (5pm to 9pm)',
+                'mode' => 'Pure Online',
+                'slots' => null,
             ],
             [
-                'name' => 'Weekend Morning',
-                'slug' => 'weekend_am',
-                'time_description' => 'Sat–Sun | 8:00 AM – 12:00 NN',
-                'mode' => 'Face-to-Face & Online',
-                'is_active' => true,
+                'program_slug' => 'online-final-coaching',
+                'label' => 'September to November 2026 | Monday, Wednesday, Friday (11am to 4pm)',
+                'mode' => 'Pure Online',
+                'slots' => null,
             ],
             [
-                'name' => 'Online Asynchronous',
-                'slug' => 'online_async',
-                'time_description' => 'Anytime — Self-paced Online',
-                'mode' => 'Online Only',
-                'is_active' => true,
+                'program_slug' => 'practical-full-course',
+                'label' => 'August 2026',
+                'mode' => 'Face-to-Face',
+                'slots' => null,
+            ],
+            [
+                'program_slug' => 'practical-full-course',
+                'label' => 'September 2026',
+                'mode' => 'Face-to-Face',
+                'slots' => null,
+            ],
+            [
+                'program_slug' => 'practical-full-course',
+                'label' => 'October 2026',
+                'mode' => 'Face-to-Face',
+                'slots' => null,
+            ],
+            [
+                'program_slug' => 'practical-full-course',
+                'label' => 'October-November 2026',
+                'mode' => 'Face-to-Face',
+                'slots' => null,
             ],
         ];
 
         foreach ($schedules as $schedule) {
-            \App\Models\Schedule::firstOrCreate(['slug' => $schedule['slug']], $schedule);
+            $program = Program::query()
+                ->where('slug', $schedule['program_slug'])
+                ->first();
+
+            if (!$program) {
+                continue;
+            }
+
+            Schedule::firstOrCreate(
+                [
+                    'program_id' => $program->id,
+                    'label'      => $schedule['label'],
+                    'mode'       => $schedule['mode'],
+                ],
+                [
+                    'start_date' => null,
+                    'end_date'   => null,
+                    'slots'      => $schedule['slots'],
+                    'is_active'  => true,
+                ]
+            );
         }
     }
 }

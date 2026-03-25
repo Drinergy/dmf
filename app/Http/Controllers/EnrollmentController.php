@@ -62,6 +62,12 @@ class EnrollmentController extends Controller
         }
 
         $program = Program::where('slug', $oldData['program'])->firstOrFail();
+        $schedule = null;
+        if (!empty($oldData['schedule_id'])) {
+            $schedule = $program->schedules()
+                ->where('id', $oldData['schedule_id'])
+                ->first();
+        }
 
         // Pass a mocked transient Enrollment object to the view just so UI won't break 
         // because it expects an active $enrollment model structure.
@@ -76,7 +82,8 @@ class EnrollmentController extends Controller
 
         return view('enrollment.payment', [
             'enrollment' => $enrollment,
-            'program'    => $program
+            'program'    => $program,
+            'schedule'   => $schedule,
         ]);
     }
 
@@ -126,7 +133,7 @@ class EnrollmentController extends Controller
 
         $referenceNumber = $request->query('ref') ?: $request->session()->get('latest_enrollment_ref');
         if ($referenceNumber) {
-            $enrollment = Enrollment::with('program')
+            $enrollment = Enrollment::with(['program', 'schedule'])
                 ->where('reference_number', $referenceNumber)
                 ->first();
         }
@@ -147,7 +154,8 @@ class EnrollmentController extends Controller
 
         return view('enrollment.success', [
             'enrollment' => $enrollment,
-            'program'    => $enrollment->program
+            'program'    => $enrollment->program,
+            'schedule'   => $enrollment->schedule,
         ]);
     }
 

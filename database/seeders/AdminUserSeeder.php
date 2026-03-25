@@ -15,8 +15,8 @@ class AdminUserSeeder extends Seeder
         \App\Models\User::firstOrCreate(
             ['email' => 'admin@dmfdental.com'],
             [
-                'name' => 'Administrator',
-                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'name' => 'DMF Dental Administrator',
+                'password' => \Illuminate\Support\Facades\Hash::make('admin12345'),
             ]
         );
     }

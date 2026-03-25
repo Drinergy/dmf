@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Program;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreEnrollmentRequest extends FormRequest
 {
@@ -21,6 +23,29 @@ class StoreEnrollmentRequest extends FormRequest
      */
     public function rules(): array
     {
+        $programSlug = (string) $this->input('program');
+        $program = Program::query()
+            ->where('slug', $programSlug)
+            ->first();
+
+        $activeScheduleCount = $program
+            ? $program->schedules()->where('is_active', true)->count()
+            : 0;
+
+        $scheduleRules = [
+            $activeScheduleCount > 1 ? 'required' : 'nullable',
+        ];
+
+        if ($program) {
+            $scheduleRules[] = Rule::exists('schedules', 'id')
+                ->where(fn ($q) => $q
+                    ->where('program_id', $program->id)
+                    ->where('is_active', true)
+                );
+        } else {
+            $scheduleRules[] = 'nullable';
+        }
+
         return [
             // Personal
             'first_name'     => 'required|string|max:255',
@@ -52,7 +77,7 @@ class StoreEnrollmentRequest extends FormRequest
 
             // Program & Payment
             'program'        => 'required|string|exists:programs,slug',
-            'schedule_id'    => 'nullable|exists:schedules,id',
+            'schedule_id'    => $scheduleRules,
             'payment_type'   => 'required|in:full,downpayment',
         ];
     }

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\Category;
 use App\Models\Program;
 
 class ProgramSeeder extends Seeder
@@ -96,7 +97,7 @@ class ProgramSeeder extends Seeder
                 'name' => 'Hybrid Face-to-Face Intensive Lecture Review',
                 'category' => 'Individual Programs (Theoretical)',
                 'tag' => 'July-Nov (Sat-Sun)',
-                'inclusions' => ['Duration: July to November 2026', 'Schedule: Sat & Sun (9am-5pm) + Wed (Online)', 'Mode: Hybrid Face-to-Face', 'Max Capacity: 150 students'],
+                'inclusions' => [],
                 'price_full' => 18000,
                 'price_dp' => 10000,
                 'early_bird_label' => null,
@@ -109,7 +110,7 @@ class ProgramSeeder extends Seeder
                 'name' => 'Online Comprehensive Lecture Review',
                 'category' => 'Individual Programs (Theoretical)',
                 'tag' => 'June-Nov (Tue,Thu,Sat)',
-                'inclusions' => ['Duration: June to November 2026', 'Schedule: Tue, Thu, Sat (5pm-9pm)', 'Mode: Pure Online'],
+                'inclusions' => [],
                 'price_full' => 15500,
                 'price_dp' => 8000,
                 'early_bird_label' => null,
@@ -122,7 +123,7 @@ class ProgramSeeder extends Seeder
                 'name' => 'Online Final Coaching',
                 'category' => 'Individual Programs (Theoretical)',
                 'tag' => 'Sept-Nov (Mon,Wed,Fri)',
-                'inclusions' => ['Duration: September to November 2026', 'Schedule: Mon, Wed, Fri (11am-4pm)', 'Mode: Pure Online'],
+                'inclusions' => [],
                 'price_full' => 7000,
                 'price_dp' => 4000,
                 'early_bird_label' => null,
@@ -133,11 +134,11 @@ class ProgramSeeder extends Seeder
 
             // Individual Programs (Practical)
             [
-                'slug' => 'practical-aug',
+                'slug' => 'practical-full-course',
                 'name' => 'Full Course Face-to-Face Practical Review',
                 'category' => 'Individual Programs (Practical)',
-                'tag' => 'August Batch',
-                'inclusions' => ['Schedule: August 2026', 'Mode: Face-to-Face'],
+                'tag' => null,
+                'inclusions' => [],
                 'price_full' => 18000,
                 'price_dp' => 5000,
                 'early_bird_label' => null,
@@ -145,49 +146,23 @@ class ProgramSeeder extends Seeder
                 'early_deadline' => null,
                 'sort_order' => 100,
             ],
-            [
-                'slug' => 'practical-sep',
-                'name' => 'Full Course Face-to-Face Practical Review',
-                'category' => 'Individual Programs (Practical)',
-                'tag' => 'September Batch',
-                'inclusions' => ['Schedule: September 2026', 'Mode: Face-to-Face'],
-                'price_full' => 18000,
-                'price_dp' => 5000,
-                'early_bird_label' => null,
-                'price_early' => null,
-                'early_deadline' => null,
-                'sort_order' => 110,
-            ],
-            [
-                'slug' => 'practical-oct',
-                'name' => 'Full Course Face-to-Face Practical Review',
-                'category' => 'Individual Programs (Practical)',
-                'tag' => 'October Batch',
-                'inclusions' => ['Schedule: October 2026', 'Mode: Face-to-Face'],
-                'price_full' => 18000,
-                'price_dp' => 5000,
-                'early_bird_label' => null,
-                'price_early' => null,
-                'early_deadline' => null,
-                'sort_order' => 120,
-            ],
-            [
-                'slug' => 'practical-octnov',
-                'name' => 'Full Course Face-to-Face Practical Review',
-                'category' => 'Individual Programs (Practical)',
-                'tag' => 'Oct-Nov Batch',
-                'inclusions' => ['Schedule: October-November 2026', 'Mode: Face-to-Face'],
-                'price_full' => 18000,
-                'price_dp' => 5000,
-                'early_bird_label' => null,
-                'price_early' => null,
-                'early_deadline' => null,
-                'sort_order' => 130,
-            ],
         ];
 
         foreach ($programs as $p) {
-            Program::firstOrCreate(['slug' => $p['slug']], $p);
+            $program = Program::firstOrCreate(['slug' => $p['slug']], $p);
+
+            $category = Category::query()
+                ->where('name', $p['category'])
+                ->first();
+
+            if ($category && $program->category_id !== $category->id) {
+                $program->update(['category_id' => $category->id]);
+            }
         }
+
+        // Deactivate legacy practical per-batch programs (batches now live in `schedules`)
+        Program::query()
+            ->whereIn('slug', ['practical-aug', 'practical-sep', 'practical-oct', 'practical-octnov'])
+            ->update(['is_active' => false]);
     }
 }

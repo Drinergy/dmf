@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Program extends Model
 {
     protected $fillable = [
         'name', 'slug', 'category', 'tag',
+        'category_id',
         'price_full', 'price_dp', 'price_early', 'early_deadline',
         'early_bird_label', 'inclusions',
         'is_active', 'sort_order',
@@ -19,14 +22,24 @@ class Program extends Model
         'is_active'      => 'boolean',
     ];
 
-    public function schedules()
+    public function categoryModel(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);
     }
 
-    public function enrollments()
+    public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
+    }
+
+    public function getCategoryLabelAttribute(): string
+    {
+        return $this->categoryModel?->name ?: (string) $this->category;
     }
 
     public function isEarlyBirdActive(): bool

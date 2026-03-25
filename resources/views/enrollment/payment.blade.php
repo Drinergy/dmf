@@ -101,6 +101,17 @@
                             @endif
                         </div>
                     </div>
+                    @if(!empty($schedule))
+                    <div class="flex justify-between py-1.5 border-b border-gray-50">
+                        <span class="text-gray-400">Batch</span>
+                        <div class="text-right max-w-[65%]">
+                            <span class="font-medium text-gray-800 block">{{ $schedule->label }}</span>
+                            @if(!empty($schedule->mode))
+                                <span class="text-[10px] text-gray-400 font-medium block mt-0.5 leading-tight">{{ $schedule->mode }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
                     <div class="flex justify-between py-1.5 border-b border-gray-50">
                         <span class="text-gray-400">Payment Type</span>
                         <span class="font-medium text-brand-600">{{ $enrollment->payment_type === 'downpayment' ? 'Downpayment' : 'Full Payment' }}</span>

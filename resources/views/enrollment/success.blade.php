@@ -97,6 +97,13 @@
                     ['label' => 'Amount Paid',   'value' => '₱' . number_format($enrollment->total_amount), 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
                     ['label' => 'Date Enrolled', 'value' => $enrollment->created_at->timezone('Asia/Manila')->format('F j, Y'), 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
                 ];
+                if(!empty($schedule)) {
+                    array_splice($details, 2, 0, [[
+                        'label' => 'Batch',
+                        'value' => trim($schedule->label . (!empty($schedule->mode) ? " ({$schedule->mode})" : '')),
+                        'icon'  => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+                    ]]);
+                }
                 if($enrollment->email) {
                     array_splice($details, 1, 0, [['label' => 'Email', 'value' => $enrollment->email, 'icon' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z']]);
                 }

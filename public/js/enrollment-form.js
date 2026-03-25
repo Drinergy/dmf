@@ -40,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const paymentSection = document.getElementById('payment-options-section');
     const lblFull        = document.getElementById('lbl-full-price');
     const lblDp          = document.getElementById('lbl-dp-price');
+    const scheduleSection = document.getElementById('schedule-section');
+    const scheduleSelect  = document.getElementById('schedule_id');
 
     radios.forEach(radio => {
         radio.addEventListener('change', function () {
@@ -66,6 +68,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dpP   = parseInt(this.getAttribute('data-dp'));
                 if (lblFull) lblFull.innerText = '₱' + fullP.toLocaleString();
                 if (lblDp)   lblDp.innerText   = '₱' + dpP.toLocaleString();
+            }
+
+            // Batch dropdown (only when applicable)
+            if (scheduleSection && scheduleSelect) {
+                const raw = this.getAttribute('data-schedules') || '[]';
+                let schedules = [];
+                try {
+                    schedules = JSON.parse(raw);
+                } catch (e) {
+                    schedules = [];
+                }
+
+                scheduleSelect.innerHTML = '<option value=\"\">Select a batch</option>';
+
+                if (Array.isArray(schedules) && schedules.length > 0) {
+                    schedules.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = String(s.id);
+                        const suffix = s.mode ? ` (${s.mode})` : '';
+                        opt.textContent = `${s.label}${suffix}`;
+                        scheduleSelect.appendChild(opt);
+                    });
+
+                    const oldScheduleId = scheduleSelect.getAttribute('data-old');
+                    if (oldScheduleId) {
+                        scheduleSelect.value = oldScheduleId;
+                    }
+
+                    if (schedules.length === 1) {
+                        scheduleSelect.value = String(schedules[0].id);
+                        scheduleSection.style.display = 'none';
+                    } else {
+                        scheduleSection.style.display = 'block';
+                    }
+                } else {
+                    scheduleSection.style.display = 'none';
+                    scheduleSelect.value = '';
+                }
             }
         });
     });

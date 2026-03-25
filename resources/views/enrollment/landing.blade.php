@@ -120,7 +120,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @php
                 // Display only the first 3 packages from the main category
-                $topPackages = $programCategories['Review Packages']->take(3);
+                $topPackages = $programCategories->get('Review Packages', collect())->take(3);
             @endphp
             
             @foreach($topPackages as $program)

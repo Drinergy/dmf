@@ -4,18 +4,25 @@ namespace App\Services;
 
 use App\Models\Enrollment;
 use App\Models\Program;
+use App\Models\Schedule;
+use Illuminate\Support\Collection;
 
 class EnrollmentService
 {
     /**
      * Get all active programs grouped by category for the frontend.
      */
-    public function getGroupedActivePrograms()
+    public function getGroupedActivePrograms(): Collection
     {
-        return Program::where('is_active', true)
+        return Program::query()
+            ->where('is_active', true)
+            ->with([
+                'categoryModel:id,name',
+                'schedules' => fn ($q) => $q->where('is_active', true)->orderBy('created_at', 'desc'),
+            ])
             ->orderBy('sort_order')
             ->get()
-            ->groupBy('category');
+            ->groupBy(fn (Program $program) => $program->category_label);
     }
 
     /**
@@ -24,6 +31,19 @@ class EnrollmentService
     public function createEnrollment(array $data): Enrollment
     {
         $program = Program::where('slug', $data['program'])->firstOrFail();
+        $scheduleId = $data['schedule_id'] ?? null;
+
+        if (empty($scheduleId)) {
+            $activeSchedules = $program->schedules()
+                ->where('is_active', true)
+                ->orderBy('created_at', 'desc')
+                ->limit(2)
+                ->get(['id']);
+
+            if ($activeSchedules->count() === 1) {
+                $scheduleId = $activeSchedules->first()->id;
+            }
+        }
 
         // Compute pricing
         $baseAmount = ($data['payment_type'] === 'full') 
@@ -63,12 +83,22 @@ class EnrollmentService
             'taker_status'     => $data['taker_status'],
             
             'program_id'       => $program->id,
-            'schedule_id'      => $data['schedule_id'] ?? null,
+            'schedule_id'      => $scheduleId,
             
             'payment_type'     => $data['payment_type'],
             'base_amount'      => $baseAmount,
             'convenience_fee'  => $convenienceFee,
             'total_amount'     => $totalAmount,
         ]);
+    }
+
+    public function getScheduleForEnrollmentData(array $data): ?Schedule
+    {
+        $scheduleId = $data['schedule_id'] ?? null;
+        if (empty($scheduleId)) {
+            return null;
+        }
+
+        return Schedule::query()->with('program')->find($scheduleId);
     }
 }
