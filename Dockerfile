@@ -44,20 +44,25 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --prefer-dist --no-interaction
 
-COPY package.json ./
-RUN npm install --no-audit --fund=false
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --fund=false
 
 COPY . .
 
-RUN cp .env.example .env \
-    && php artisan key:generate --force --no-interaction \
-    && composer dump-autoload --optimize --classmap-authoritative \
-    && php artisan package:discover --ansi \
-    && (php artisan filament:upgrade --ansi || true) \
-    && npm run build \
-    && rm -f .env \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R ug+rwx storage bootstrap/cache
+RUN set -eux; \
+    cp .env.example .env; \
+    php artisan key:generate --force --no-interaction; \
+    composer dump-autoload --optimize --classmap-authoritative; \
+    php artisan package:discover --ansi; \
+    (php artisan filament:upgrade --ansi || true)
+
+RUN set -eux; \
+    npm run build
+
+RUN set -eux; \
+    rm -f .env; \
+    chown -R www-data:www-data storage bootstrap/cache; \
+    chmod -R ug+rwx storage bootstrap/cache
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
