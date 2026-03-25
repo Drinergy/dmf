@@ -35,7 +35,13 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(fn () => view('filament.brand'))
             ->favicon(asset('favicon.ico'))
             ->assets([
-                Css::make('dmf-filament-admin', asset('css/filament-admin.css')),
+                Css::make('dmf-filament-admin')
+                    ->html(function (): string {
+                        $path = public_path('css/filament-admin.css');
+                        $version = is_file($path) ? (string) filemtime($path) : (string) time();
+
+                        return "<link href=\"/css/filament-admin.css?v={$version}\" rel=\"stylesheet\" data-navigate-track />";
+                    }),
             ])
             ->navigation(false)
             ->topNavigation()
