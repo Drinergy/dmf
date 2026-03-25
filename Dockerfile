@@ -52,9 +52,9 @@ COPY . .
 RUN set -eux; \
     cp .env.example .env; \
     php artisan key:generate --force --no-interaction; \
-    composer dump-autoload --optimize --classmap-authoritative; \
+    composer dump-autoload --optimize --classmap-authoritative --no-scripts; \
     php artisan package:discover --ansi; \
-    (php artisan filament:upgrade --ansi || true)
+    true
 
 RUN set -eux; \
     npm run build
