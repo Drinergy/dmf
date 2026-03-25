@@ -1,0 +1,27 @@
+.fi-ta-header-toolbar {
+    gap: 0.5rem;
+}
+
+/* Let the right-side toolbar group stretch, so search can grow. */
+.fi-ta-header-toolbar > .ms-auto {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Make the global search field take all available space. */
+.fi-ta-header-toolbar .fi-ta-search-field {
+    flex: 1 1 32rem;
+    min-width: 16rem;
+    max-width: none !important;
+}
+
+.fi-ta-header-toolbar .fi-ta-search-field .fi-input-wrp,
+.fi-ta-header-toolbar .fi-ta-search-field input {
+    width: 100%;
+}
+
+/* Help icon should look informational (not a CTA). */
+.dmf-filament-help-icon {
+    color: rgb(37 99 235) !important; /* blue-600 */
+}
+

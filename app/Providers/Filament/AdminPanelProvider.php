@@ -9,6 +9,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\View\TablesRenderHook;
@@ -32,7 +33,10 @@ class AdminPanelProvider extends PanelProvider
             ->login(\App\Filament\Pages\Auth\CustomLogin::class)
             ->brandName('DMF Dental Training Center')
             ->brandLogo(fn () => view('filament.brand'))
-            ->favicon(asset('images/logo.png'))
+            ->favicon(asset('favicon.ico'))
+            ->assets([
+                Css::make('dmf-filament-admin', asset('css/filament-admin.css')),
+            ])
             ->navigation(false)
             ->topNavigation()
             ->maxContentWidth('6xl')
@@ -59,7 +63,7 @@ class AdminPanelProvider extends PanelProvider
                 fn () => view('filament.footer'),
             )
             ->renderHook(
-                TablesRenderHook::TOOLBAR_TOGGLE_COLUMN_TRIGGER_BEFORE,
+                TablesRenderHook::TOOLBAR_SEARCH_AFTER,
                 fn () => view('filament.tables.enrollments-refresh'),
                 scopes: \App\Filament\Resources\EnrollmentResource\Pages\ListEnrollments::class,
             )
