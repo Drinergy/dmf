@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             ProgramSeeder::class,
             ScheduleSeeder::class,
+            AdminUserSeeder::class,
         ]);
     }
 }
