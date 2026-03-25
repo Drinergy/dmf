@@ -126,6 +126,10 @@ class EnrollmentResource extends Resource
                                 ->label('Program')
                                 ->weight('bold')
                                 ->color('primary'),
+                            Infolists\Components\TextEntry::make('schedule.label')
+                                ->label('Batch')
+                                ->placeholder('—')
+                                ->weight('semibold'),
                             Infolists\Components\TextEntry::make('payment_type')
                                 ->label('Payment Plan')
                                 ->formatStateUsing(fn ($state) => $state === 'full' ? 'Full Payment' : 'Downpayment')

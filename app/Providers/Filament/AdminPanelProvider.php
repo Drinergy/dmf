@@ -11,6 +11,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
+use Filament\Tables\View\TablesRenderHook;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -56,6 +57,11 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::FOOTER,
                 fn () => view('filament.footer'),
+            )
+            ->renderHook(
+                TablesRenderHook::TOOLBAR_TOGGLE_COLUMN_TRIGGER_BEFORE,
+                fn () => view('filament.tables.enrollments-refresh'),
+                scopes: \App\Filament\Resources\EnrollmentResource\Pages\ListEnrollments::class,
             )
             ->middleware([
                 EncryptCookies::class,
