@@ -9,7 +9,23 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewEnrollment extends ViewRecord
 {
     protected static string $resource = EnrollmentResource::class;
-    protected ?string $subheading = 'Detailed record of student enrollment and payment transactions.';
+    protected ?string $subheading = null;
+
+    public function getTitle(): string
+    {
+        $record = $this->getRecord();
+
+        $fullName = trim(sprintf(
+            '%s %s %s',
+            (string) ($record->first_name ?? ''),
+            (string) ($record->middle_name ?? ''),
+            (string) ($record->surname ?? ''),
+        ));
+
+        $label = $fullName !== '' ? $fullName : 'Student';
+
+        return "Enrollment Record — {$label}";
+    }
 
     // Hide breadcrumbs
     public function getBreadcrumbs(): array

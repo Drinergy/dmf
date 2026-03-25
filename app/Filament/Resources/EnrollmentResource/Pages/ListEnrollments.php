@@ -9,7 +9,12 @@ use Filament\Resources\Pages\ListRecords;
 class ListEnrollments extends ListRecords
 {
     protected static string $resource = EnrollmentResource::class;
-    protected ?string $subheading = 'Comprehensive overview of student enrollments and payment records.';
+    protected ?string $subheading = null;
+
+    public function getHeading(): string
+    {
+        return 'Enrollment Records';
+    }
 
     public function getBreadcrumbs(): array
     {
