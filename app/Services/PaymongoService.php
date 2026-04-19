@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Enrollment;
@@ -11,22 +13,54 @@ use RuntimeException;
 
 class PaymongoService
 {
+    public function __construct(
+        protected EnrollmentFinancialService $enrollmentFinancialService
+    ) {}
+
     /**
      * Create checkout session from an existing enrollment.
      *
+     * @param  string  $purpose  Payment::PURPOSE_INITIAL | Payment::PURPOSE_BALANCE
+     *
      * @throws RuntimeException
      */
-    public function createCheckoutSession(Enrollment $enrollment, string $paymentMethod): array
+    public function createCheckoutSession(Enrollment $enrollment, string $paymentMethod, string $purpose = Payment::PURPOSE_INITIAL): array
     {
         $program = Program::findOrFail($enrollment->program_id);
+        $fee = EnrollmentPricingService::CONVENIENCE_FEE_PESOS;
+
+        if ($purpose === Payment::PURPOSE_BALANCE) {
+            if ($enrollment->payment_type !== 'downpayment') {
+                throw new RuntimeException('Balance checkout is only available for downpayment enrollments.');
+            }
+
+            $this->enrollmentFinancialService->recalculateEnrollmentFinancials($enrollment);
+            $enrollment->refresh();
+
+            $tuitionPortion = EnrollmentPricingService::balanceTuitionDue($enrollment);
+            if ($tuitionPortion <= 0) {
+                throw new RuntimeException('No remaining tuition balance.');
+            }
+
+            $totalPesos = $tuitionPortion + $fee;
+            $lineSuffix = 'Balance';
+        } else {
+            $tuitionPortion = (int) $enrollment->base_amount;
+            $totalPesos = $tuitionPortion + $fee;
+            $lineSuffix = $enrollment->payment_type === 'downpayment' ? 'Downpayment' : 'Full Payment';
+        }
 
         $payment = Payment::updateOrCreate(
-            ['enrollment_id' => $enrollment->id],
+            [
+                'enrollment_id' => $enrollment->id,
+                'purpose' => $purpose,
+            ],
             [
                 'payment_method' => $paymentMethod,
-                'amount' => (int) round($enrollment->total_amount * 100),
+                'amount' => (int) round($totalPesos * 100),
                 'currency' => 'PHP',
                 'status' => 'pending',
+                'tuition_amount' => $tuitionPortion,
             ]
         );
 
@@ -46,11 +80,11 @@ class PaymongoService
                     'line_items' => [
                         [
                             'currency' => 'PHP',
-                            'amount' => (int) round($enrollment->total_amount * 100),
+                            'amount' => (int) round($totalPesos * 100),
                             'description' => sprintf(
                                 '%s (%s)',
                                 $program->name,
-                                $enrollment->payment_type === 'downpayment' ? 'Downpayment' : 'Full Payment'
+                                $lineSuffix
                             ),
                             'name' => $program->name,
                             'quantity' => 1,
@@ -63,9 +97,10 @@ class PaymongoService
             ],
         ];
         $idempotencyKey = sprintf(
-            'enroll-%s-payment-%s-method-%s',
+            'enroll-%s-payment-%s-purpose-%s-method-%s',
             $enrollment->reference_number,
             (string) $payment->id,
+            $purpose,
             $paymentMethod
         );
 
@@ -80,7 +115,7 @@ class PaymongoService
                 ->retry(2, 300)
                 ->post('https://api.paymongo.com/v1/checkout_sessions', $payload);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('PayMongo checkout session creation failed.', [
                     'reference_number' => $enrollment->reference_number,
                     'payment_method' => $paymentMethod,
@@ -119,11 +154,11 @@ class PaymongoService
 
     public function syncCheckoutSessionStatus(string $checkoutSessionId): ?Enrollment
     {
-        $payment = Payment::with('enrollment.program')
+        $payment = Payment::with(['enrollment.program', 'enrollment.payments'])
             ->where('paymongo_checkout_session_id', $checkoutSessionId)
             ->first();
 
-        if (!$payment) {
+        if (! $payment) {
             return null;
         }
 
@@ -134,7 +169,7 @@ class PaymongoService
                 ->retry(2, 300)
                 ->get("https://api.paymongo.com/v1/checkout_sessions/{$checkoutSessionId}");
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning('PayMongo checkout status fetch failed.', [
                     'checkout_session_id' => $checkoutSessionId,
                     'status' => $response->status(),
@@ -162,10 +197,10 @@ class PaymongoService
             ]);
 
             if ($localStatus === 'paid') {
-                $payment->enrollment->update(['status' => 'confirmed']);
+                $this->enrollmentFinancialService->recalculateEnrollmentFinancials($payment->enrollment->fresh());
             }
 
-            return $payment->enrollment->refresh()->load('program');
+            return $payment->enrollment->refresh()->load(['program', 'payments']);
         } catch (\Throwable $e) {
             Log::error('PayMongo checkout status sync exception.', [
                 'checkout_session_id' => $checkoutSessionId,
@@ -179,7 +214,7 @@ class PaymongoService
     public function handleWebhook(string $rawPayload, ?string $signatureHeader): array
     {
         $payload = json_decode($rawPayload, true);
-        if (!is_array($payload)) {
+        if (! is_array($payload)) {
             return [
                 'status' => 202,
                 'body' => ['message' => 'Invalid payload format.'],
@@ -187,7 +222,7 @@ class PaymongoService
         }
 
         $isLiveMode = (bool) data_get($payload, 'data.attributes.livemode', false);
-        if (!$this->isValidWebhookSignature($rawPayload, $signatureHeader, $isLiveMode)) {
+        if (! $this->isValidWebhookSignature($rawPayload, $signatureHeader, $isLiveMode)) {
             Log::warning('PayMongo webhook rejected due to invalid signature.', [
                 'livemode' => $isLiveMode,
             ]);
@@ -233,7 +268,7 @@ class PaymongoService
             ->where('paymongo_checkout_session_id', $checkoutSessionId)
             ->first();
 
-        if (!$payment) {
+        if (! $payment) {
             Log::info('PayMongo webhook ignored due to unknown checkout session.', [
                 'event_type' => $eventType,
                 'checkout_session_id' => $checkoutSessionId,
@@ -279,8 +314,8 @@ class PaymongoService
             'paymongo_payload' => $payload,
         ]);
 
-        if ($resolvedStatus === 'paid' && $payment->enrollment->status !== 'confirmed') {
-            $payment->enrollment->update(['status' => 'confirmed']);
+        if ($resolvedStatus === 'paid') {
+            $this->enrollmentFinancialService->recalculateEnrollmentFinancials($payment->enrollment->fresh());
         }
 
         return [
@@ -305,7 +340,7 @@ class PaymongoService
         }
 
         $timestamp = $signatureParts['t'] ?? null;
-        if ($timestamp === null || !ctype_digit((string) $timestamp)) {
+        if ($timestamp === null || ! ctype_digit((string) $timestamp)) {
             return false;
         }
 

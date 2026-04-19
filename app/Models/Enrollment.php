@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Services\EnrollmentPricingService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Enrollment extends Model
 {
@@ -26,10 +30,21 @@ class Enrollment extends Model
 
         // Payment
         'payment_type', 'base_amount', 'convenience_fee', 'total_amount',
+
+        // Tuition snapshot & ledger
+        'tuition_list_amount',
+        'tuition_price_early',
+        'tuition_early_deadline',
+        'tuition_price_dp',
+        'tuition_discount_amount',
+        'tuition_discount_label',
+        'amount_paid_tuition',
+        'balance_tuition_due',
     ];
 
     protected $casts = [
         'birthday' => 'date',
+        'tuition_early_deadline' => 'date',
     ];
 
     /* ── Relationships ─────────────────────────────────────────── */
@@ -44,9 +59,9 @@ class Enrollment extends Model
         return $this->belongsTo(Schedule::class);
     }
 
-    public function payment()
+    public function payments(): HasMany
     {
-        return $this->hasOne(Payment::class);
+        return $this->hasMany(Payment::class);
     }
 
     /* ── Helpers ───────────────────────────────────────────────── */
@@ -56,10 +71,18 @@ class Enrollment extends Model
         return trim("{$this->first_name} {$this->middle_name} {$this->surname}");
     }
 
+    /**
+     * Live remaining tuition (respects early-bird cutoff vs full list price).
+     */
+    public function getComputedBalanceTuitionDueAttribute(): int
+    {
+        return EnrollmentPricingService::balanceTuitionDue($this);
+    }
+
     public static function generateReference(): string
     {
         do {
-            $ref = 'DMF-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
+            $ref = 'DMF-'.strtoupper(substr(md5(uniqid('', true)), 0, 8));
         } while (static::where('reference_number', $ref)->exists());
 
         return $ref;

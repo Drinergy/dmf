@@ -85,6 +85,8 @@ class ProgramResource extends Resource
                         ->minValue(0),
 
                     Forms\Components\DatePicker::make('early_deadline')
+                        ->label('Early-bird discount ends')
+                        ->helperText('After this date, remaining tuition is calculated from list price instead of the early-bird amount. It is a pricing cutoff, not a “pay everything by this day” rule unless your policy says otherwise.')
                         ->nullable(),
 
                     Forms\Components\Textarea::make('early_bird_label')
