@@ -8,6 +8,7 @@ use App\Models\Program;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\Alignment;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,13 +18,16 @@ class ProgramResource extends Resource
     protected static ?string $model = Program::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+
     protected static ?string $navigationLabel = 'Programs';
+
     protected static ?int $navigationSort = 20;
-    protected static bool $shouldRegisterNavigation = false;
+
+    protected static bool $shouldRegisterNavigation = true;
 
     public static function canViewAny(): bool
     {
-        return app()->environment('local');
+        return true;
     }
 
     public static function form(Form $form): Form
@@ -72,12 +76,6 @@ class ProgramResource extends Resource
                         ->required()
                         ->minValue(0),
 
-                    Forms\Components\TextInput::make('price_dp')
-                        ->label('Downpayment Price')
-                        ->numeric()
-                        ->required()
-                        ->minValue(0),
-
                     Forms\Components\TextInput::make('price_early')
                         ->label('Early Bird Price')
                         ->numeric()
@@ -94,32 +92,6 @@ class ProgramResource extends Resource
                         ->nullable(),
                 ])->columns(2),
 
-            Forms\Components\Section::make('Inclusions')
-                ->schema([
-                    Forms\Components\Repeater::make('inclusions')
-                        ->schema([
-                            Forms\Components\TextInput::make('value')
-                                ->label('Inclusion')
-                                ->required(),
-                        ])
-                        ->defaultItems(0)
-                        ->addActionLabel('Add inclusion')
-                        ->dehydrated(true)
-                        ->mutateDehydratedStateUsing(function ($state) {
-                            $items = is_array($state) ? $state : [];
-                            return array_values(array_filter(array_map(
-                                fn ($row) => is_array($row) ? ($row['value'] ?? null) : null,
-                                $items
-                            )));
-                        })
-                        ->mutateStateUsing(function ($state) {
-                            if (!is_array($state)) {
-                                return [];
-                            }
-
-                            return array_map(fn ($value) => ['value' => $value], $state);
-                        }),
-                ]),
         ]);
     }
 
@@ -149,7 +121,7 @@ class ProgramResource extends Resource
                     ->label('Full')
                     ->money('PHP')
                     ->sortable()
-                    ->alignment(\Filament\Support\Enums\Alignment::End),
+                    ->alignment(Alignment::End),
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
@@ -167,10 +139,9 @@ class ProgramResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListPrograms::route('/'),
+            'index' => Pages\ListPrograms::route('/'),
             'create' => Pages\CreateProgram::route('/create'),
-            'edit'   => Pages\EditProgram::route('/{record}/edit'),
+            'edit' => Pages\EditProgram::route('/{record}/edit'),
         ];
     }
 }
-

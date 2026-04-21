@@ -9,4 +9,3 @@ class EditProgram extends EditRecord
 {
     protected static string $resource = ProgramResource::class;
 }
-

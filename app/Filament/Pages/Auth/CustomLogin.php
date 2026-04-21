@@ -8,7 +8,7 @@ use Illuminate\Contracts\Support\Htmlable;
 class CustomLogin extends BaseLogin
 {
     // Removes the "Sign in to your account" heading on the login card
-    public function getHeading(): string | Htmlable
+    public function getHeading(): string|Htmlable
     {
         return '';
     }

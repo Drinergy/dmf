@@ -17,13 +17,16 @@ class ScheduleResource extends Resource
     protected static ?string $model = Schedule::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+
     protected static ?string $navigationLabel = 'Schedules';
+
     protected static ?int $navigationSort = 30;
-    protected static bool $shouldRegisterNavigation = false;
+
+    protected static bool $shouldRegisterNavigation = true;
 
     public static function canViewAny(): bool
     {
-        return app()->environment('local');
+        return true;
     }
 
     public static function form(Form $form): Form
@@ -95,7 +98,7 @@ class ScheduleResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('enrollments_count')
-                    ->counts('enrollments')
+                    ->counts('enrollmentItems')
                     ->label('# Enrollments')
                     ->sortable(),
             ])
@@ -107,14 +110,14 @@ class ScheduleResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->mutateRecordDataUsing(function (array $data, Schedule $record): array {
-                        if ($record->enrollments()->exists()) {
+                        if ($record->enrollmentItems()->exists()) {
                             $data['_has_enrollments'] = true;
                         }
 
                         return $data;
                     }),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn (Schedule $record): bool => !$record->enrollments()->exists()),
+                    ->visible(fn (Schedule $record): bool => ! $record->enrollmentItems()->exists()),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()
@@ -126,10 +129,9 @@ class ScheduleResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListSchedules::route('/'),
+            'index' => Pages\ListSchedules::route('/'),
             'create' => Pages\CreateSchedule::route('/create'),
-            'edit'   => Pages\EditSchedule::route('/{record}/edit'),
+            'edit' => Pages\EditSchedule::route('/{record}/edit'),
         ];
     }
 }
-

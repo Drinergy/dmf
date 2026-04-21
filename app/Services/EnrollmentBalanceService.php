@@ -7,7 +7,6 @@ namespace App\Services;
 use App\Exceptions\BalanceAlreadySettledException;
 use App\Models\Enrollment;
 use App\Models\Payment;
-use App\Models\Program;
 use Illuminate\Support\Facades\URL;
 use RuntimeException;
 
@@ -44,7 +43,7 @@ final class EnrollmentBalanceService
      * @param  string  $referenceNumber  Enrollment reference number from the signed route.
      * @return array{
      *     enrollment: Enrollment,
-     *     program: Program,
+     *     purchasable_name: string,
      *     balance_tuition: int,
      *     convenience_fee: int,
      *     total_due: int,
@@ -60,7 +59,7 @@ final class EnrollmentBalanceService
      */
     public function getBalancePageData(string $referenceNumber): array
     {
-        $enrollment = Enrollment::with(['program', 'schedule'])
+        $enrollment = Enrollment::query()
             ->where('reference_number', $referenceNumber)
             ->firstOrFail();
 
@@ -72,6 +71,10 @@ final class EnrollmentBalanceService
 
         if ($enrollment->payment_type !== 'downpayment') {
             throw new RuntimeException('This payment link is only valid for downpayment enrollments.');
+        }
+
+        if ((int) $enrollment->amount_paid_tuition <= 0) {
+            throw new RuntimeException('No downpayment has been received yet. Please pay the initial checkout first.');
         }
 
         $balance = EnrollmentPricingService::balanceTuitionDue($enrollment);
@@ -89,7 +92,7 @@ final class EnrollmentBalanceService
 
         return [
             'enrollment' => $enrollment,
-            'program' => $enrollment->program,
+            'purchasable_name' => (string) ($enrollment->purchasable_name_snapshot ?? '—'),
             'balance_tuition' => $balance,
             'convenience_fee' => $fee,
             'total_due' => $balance + $fee,

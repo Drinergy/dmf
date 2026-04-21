@@ -6,7 +6,6 @@ namespace App\Services;
 
 use App\Models\Enrollment;
 use App\Models\Payment;
-use App\Models\Program;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -26,7 +25,7 @@ class PaymongoService
      */
     public function createCheckoutSession(Enrollment $enrollment, string $paymentMethod, string $purpose = Payment::PURPOSE_INITIAL): array
     {
-        $program = Program::findOrFail($enrollment->program_id);
+        $purchasableName = (string) ($enrollment->purchasable_name_snapshot ?? 'Enrollment');
         $fee = EnrollmentPricingService::CONVENIENCE_FEE_PESOS;
 
         if ($purpose === Payment::PURPOSE_BALANCE) {
@@ -76,17 +75,17 @@ class PaymongoService
                     'show_description' => true,
                     'show_line_items' => true,
                     'cancel_url' => route('enroll.cancel', ['ref' => $enrollment->reference_number]),
-                    'description' => $program->name,
+                    'description' => $purchasableName,
                     'line_items' => [
                         [
                             'currency' => 'PHP',
                             'amount' => (int) round($totalPesos * 100),
                             'description' => sprintf(
                                 '%s (%s)',
-                                $program->name,
+                                $purchasableName,
                                 $lineSuffix
                             ),
-                            'name' => $program->name,
+                            'name' => $purchasableName,
                             'quantity' => 1,
                         ],
                     ],
@@ -154,7 +153,7 @@ class PaymongoService
 
     public function syncCheckoutSessionStatus(string $checkoutSessionId): ?Enrollment
     {
-        $payment = Payment::with(['enrollment.program', 'enrollment.payments'])
+        $payment = Payment::with(['enrollment', 'enrollment.payments'])
             ->where('paymongo_checkout_session_id', $checkoutSessionId)
             ->first();
 
@@ -200,7 +199,7 @@ class PaymongoService
                 $this->enrollmentFinancialService->recalculateEnrollmentFinancials($payment->enrollment->fresh());
             }
 
-            return $payment->enrollment->refresh()->load(['program', 'payments']);
+            return $payment->enrollment->refresh()->load(['payments']);
         } catch (\Throwable $e) {
             Log::error('PayMongo checkout status sync exception.', [
                 'checkout_session_id' => $checkoutSessionId,

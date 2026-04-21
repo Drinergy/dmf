@@ -15,7 +15,7 @@ class Category extends Model
 
     protected $casts = [
         'sort_order' => 'integer',
-        'is_active'  => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     public function programs(): HasMany
@@ -23,4 +23,3 @@ class Category extends Model
         return $this->hasMany(Program::class);
     }
 }
-

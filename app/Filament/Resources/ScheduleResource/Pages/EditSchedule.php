@@ -9,4 +9,3 @@ class EditSchedule extends EditRecord
 {
     protected static string $resource = ScheduleResource::class;
 }
-

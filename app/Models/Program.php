@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Program extends Model
@@ -11,16 +12,21 @@ class Program extends Model
     protected $fillable = [
         'name', 'slug', 'category', 'tag',
         'category_id',
-        'price_full', 'price_dp', 'price_early', 'early_deadline',
-        'early_bird_label', 'inclusions',
+        'price_full', 'price_early', 'early_deadline',
+        'early_bird_label',
         'is_active', 'sort_order',
     ];
 
     protected $casts = [
-        'inclusions'     => 'array',
         'early_deadline' => 'date',
-        'is_active'      => 'boolean',
+        'is_active' => 'boolean',
     ];
+
+    public function packages(): BelongsToMany
+    {
+        return $this->belongsToMany(Package::class, 'package_program', 'program_id', 'package_id')
+            ->withPivot(['sort_order']);
+    }
 
     public function categoryModel(): BelongsTo
     {
@@ -52,5 +58,10 @@ class Program extends Model
     public function getActivePriceAttribute(): int
     {
         return $this->isEarlyBirdActive() ? $this->price_early : $this->price_full;
+    }
+
+    public function getDownpaymentAmountAttribute(): int
+    {
+        return (int) round(((int) $this->price_full) * 0.5);
     }
 }

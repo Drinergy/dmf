@@ -100,7 +100,7 @@
                 @php
                 $details = [
                     ['label' => 'Full Name',     'value' => $enrollment->full_name, 'icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
-                    ['label' => 'Program',       'value' => $program->name,         'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'],
+                    ['label' => 'Program / Package', 'value' => $purchasable?->name ?? '—', 'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'],
                     ['label' => 'Payment Type',  'value' => $enrollment->payment_type === 'downpayment' ? 'Downpayment' : 'Full Payment', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
                     ['label' => 'Date Enrolled', 'value' => $enrollment->created_at->timezone('Asia/Manila')->format('F j, Y'), 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
                 ];
@@ -110,13 +110,6 @@
                         ['label' => 'Tuition paid (cumulative)', 'value' => '₱' . number_format($enrollment->amount_paid_tuition), 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
                         ['label' => 'Remaining tuition', 'value' => '₱' . number_format($bal), 'hint' => $bal > 0 ? 'Early-bird pricing applies if you complete payment on or before the discount end date. After that, the regular list price applies.' : null, 'icon' => 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 5h.01M12 12h3m-3 4h.01M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z'],
                     ]);
-                }
-                if(!empty($schedule)) {
-                    array_splice($details, 2, 0, [[
-                        'label' => 'Batch',
-                        'value' => trim($schedule->label . (!empty($schedule->mode) ? " ({$schedule->mode})" : '')),
-                        'icon'  => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-                    ]]);
                 }
                 if($enrollment->email) {
                     array_splice($details, 1, 0, [['label' => 'Email', 'value' => $enrollment->email, 'icon' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z']]);

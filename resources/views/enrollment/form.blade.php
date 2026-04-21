@@ -188,8 +188,66 @@
                 <span class="w-6 h-6 rounded bg-brand-50 text-brand-600 flex items-center justify-center text-sm">4</span>
                 Program Selection
             </h2>
+
+            @error('program')
+                <p class="mb-4 text-xs text-red-600">{{ $message }}</p>
+            @enderror
             
             <div class="space-y-8">
+                @if(isset($packages) && $packages->count() > 0)
+                <div>
+                    <h3 class="text-md font-bold text-gray-700 border-b border-gray-100 pb-2 mb-4">Review Packages</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        @foreach($packages as $pkg)
+                        @php
+                            $isEarlyBirdActive = $pkg->isEarlyBirdActive();
+                            $activeFullPrice = $isEarlyBirdActive ? $pkg->price_early : $pkg->price_full;
+                        @endphp
+                        <label class="program-opt relative flex flex-col h-full rounded-xl border-2 border-gray-100 p-4 bg-white" for="prog-{{ $pkg->slug }}">
+                            <input type="radio" id="prog-{{ $pkg->slug }}" name="program" value="{{ $pkg->slug }}" class="sr-only" required
+                                   data-kind="package"
+                                   data-full="{{ $activeFullPrice }}" data-dp="{{ $pkg->downpayment_amount }}"
+                                   data-schedules='[]'
+                                   {{ old('program', $oldData['program'] ?? (request('program') === $pkg->slug ? $pkg->slug : '')) === $pkg->slug ? 'checked' : '' }}>
+
+                            <p class="font-bold text-brand-900 text-sm mb-2 leading-tight pr-4">{{ $pkg->name }}</p>
+
+                            @if($pkg->programs->count() > 0)
+                                <ul class="text-gray-500 text-[11px] mb-4 leading-snug space-y-1 flex-1">
+                                    @foreach($pkg->programs as $incProgram)
+                                        <li class="flex items-start gap-1"><span class="text-brand-400">•</span> <span>{{ $incProgram->name }}</span></li>
+                                    @endforeach
+                                </ul>
+                            @endif
+
+                            <div class="flex items-start gap-4 border-t border-gray-50 pt-3 mt-auto">
+                                <div class="flex-1">
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Full Price</p>
+                                    @if($isEarlyBirdActive)
+                                        <p class="font-bold text-gray-800 text-sm">
+                                            <span class="line-through text-gray-400 font-normal text-[11px] mr-1">₱{{ number_format($pkg->price_full) }}</span>
+                                            ₱{{ number_format($pkg->price_early) }}
+                                        </p>
+                                        <p class="text-[9px] text-accent-600 font-bold bg-accent-50 px-1 py-0.5 rounded inline-block mt-0.5 uppercase tracking-wide">Early Bird Applied!</p>
+                                    @else
+                                        <p class="font-bold text-gray-800 text-sm">₱{{ number_format($pkg->price_full) }}</p>
+                                    @endif
+                                </div>
+                                <div class="pl-4 border-l border-gray-100">
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-wider">Downpayment</p>
+                                    <p class="font-bold text-brand-600 text-sm">₱{{ number_format($pkg->downpayment_amount) }}</p>
+                                </div>
+                            </div>
+
+                            <span class="absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-gray-200 flex items-center justify-center program-check transition-all">
+                                <svg class="w-3 h-3 text-brand-600 opacity-0 program-check-icon transition-all" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            </span>
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
                 @foreach($programCategories as $categoryName => $programs)
                 <div>
                     <h3 class="text-md font-bold text-gray-700 border-b border-gray-100 pb-2 mb-4">{{ $categoryName }}</h3>
@@ -201,7 +259,8 @@
                         @endphp
                         <label class="program-opt relative flex flex-col h-full rounded-xl border-2 border-gray-100 p-4 bg-white" for="prog-{{ $prog->slug }}">
                             <input type="radio" id="prog-{{ $prog->slug }}" name="program" value="{{ $prog->slug }}" class="sr-only" required
-                                   data-full="{{ $activeFullPrice }}" data-dp="{{ $prog->price_dp }}"
+                                   data-kind="program"
+                                   data-full="{{ $activeFullPrice }}" data-dp="{{ $prog->downpayment_amount }}"
                                    data-schedules='@json($prog->schedules->map(fn($s) => ["id" => $s->id, "label" => $s->label, "mode" => $s->mode]))'
                                    {{ old('program', $oldData['program'] ?? (request('program') === $prog->slug ? $prog->slug : '')) === $prog->slug ? 'checked' : '' }}>
                             
@@ -241,15 +300,6 @@
                                 </div>
                             @endif
 
-                            {{-- Curriculum / package inclusions --}}
-                            @if(!empty($prog->inclusions) && is_array($prog->inclusions) && count($prog->inclusions) > 0)
-                                <ul class="text-gray-500 text-[11px] mb-4 leading-snug space-y-1 flex-1">
-                                    @foreach($prog->inclusions as $inc)
-                                        <li class="flex items-start gap-1"><span class="text-brand-400">•</span> <span>{{ $inc }}</span></li>
-                                    @endforeach
-                                </ul>
-                            @endif
-                            
                             <div class="flex items-start gap-4 border-t border-gray-50 pt-3 mt-auto">
                                 <div class="flex-1">
                                     <p class="text-[10px] text-gray-400 uppercase tracking-wider">Full Price</p>
@@ -265,7 +315,7 @@
                                 </div>
                                 <div class="pl-4 border-l border-gray-100">
                                     <p class="text-[10px] text-gray-400 uppercase tracking-wider">Downpayment</p>
-                                    <p class="font-bold text-brand-600 text-sm">₱{{ number_format($prog->price_dp) }}</p>
+                                    <p class="font-bold text-brand-600 text-sm">₱{{ number_format($prog->downpayment_amount) }}</p>
                                 </div>
                             </div>
                             
@@ -304,6 +354,10 @@
                 Payment Preference
             </h2>
             <p class="text-sm text-gray-500 mb-4">Choose how you would like to settle your balance today.</p>
+
+            @error('payment_type')
+                <p class="mb-4 text-xs text-red-600">{{ $message }}</p>
+            @enderror
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label class="pay-type-opt relative flex flex-col items-center justify-center rounded-xl border-2 border-gray-100 p-5 bg-white text-center" for="pay-full">

@@ -18,9 +18,8 @@ class CategorySeeder extends Seeder
         foreach ($categories as $c) {
             Category::firstOrCreate(['name' => $c['name']], [
                 'sort_order' => $c['sort_order'],
-                'is_active'  => true,
+                'is_active' => true,
             ]);
         }
     }
 }
-

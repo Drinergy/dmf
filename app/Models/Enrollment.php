@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\EnrollmentStatus;
 use App\Services\EnrollmentPricingService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Enrollment extends Model
 {
@@ -25,8 +27,9 @@ class Enrollment extends Model
         // Academic
         'school', 'year_level', 'year_graduated', 'taker_status',
 
-        // Program & Payment
-        'program_id', 'schedule_id',
+        // Purchased item (Program or Package)
+        'purchasable_type', 'purchasable_id',
+        'purchasable_name_snapshot', 'purchasable_slug_snapshot',
 
         // Payment
         'payment_type', 'base_amount', 'convenience_fee', 'total_amount',
@@ -44,24 +47,25 @@ class Enrollment extends Model
 
     protected $casts = [
         'birthday' => 'date',
+        'status' => EnrollmentStatus::class,
         'tuition_early_deadline' => 'date',
     ];
 
     /* ── Relationships ─────────────────────────────────────────── */
 
-    public function program()
+    public function purchasable(): MorphTo
     {
-        return $this->belongsTo(Program::class);
-    }
-
-    public function schedule()
-    {
-        return $this->belongsTo(Schedule::class);
+        return $this->morphTo();
     }
 
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(EnrollmentItem::class);
     }
 
     /* ── Helpers ───────────────────────────────────────────────── */

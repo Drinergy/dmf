@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\ScheduleResource\Pages;
+namespace App\Filament\Resources\PackageResource\Pages;
 
-use App\Filament\Resources\ScheduleResource;
+use App\Filament\Resources\PackageResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListSchedules extends ListRecords
+class ListPackages extends ListRecords
 {
-    protected static string $resource = ScheduleResource::class;
+    protected static string $resource = PackageResource::class;
 
     protected function getHeaderActions(): array
     {

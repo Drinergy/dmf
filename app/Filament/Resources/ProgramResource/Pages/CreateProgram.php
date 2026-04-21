@@ -9,4 +9,3 @@ class CreateProgram extends CreateRecord
 {
     protected static string $resource = ProgramResource::class;
 }
-

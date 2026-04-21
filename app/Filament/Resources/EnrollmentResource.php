@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\EnrollmentStatus;
 use App\Filament\Resources\EnrollmentResource\Pages;
 use App\Filament\Resources\EnrollmentResource\RelationManagers;
 use App\Models\Enrollment;
+use App\Models\Package;
+use App\Models\Program;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
@@ -76,6 +79,7 @@ class EnrollmentResource extends Resource
                         ])->columns(['default' => 1, 'md' => 2]),
 
                     Infolists\Components\Section::make('Academic Background')
+                        ->description('School and board exam/taker information.')
                         ->icon('heroicon-o-academic-cap')
                         ->schema([
                             Infolists\Components\TextEntry::make('school')
@@ -91,6 +95,7 @@ class EnrollmentResource extends Resource
                         ])->columns(['default' => 1, 'md' => 3]),
 
                     Infolists\Components\Section::make('Home Address')
+                        ->description('Primary address details for records and communications.')
                         ->icon('heroicon-o-map-pin')
                         ->schema([
                             Infolists\Components\TextEntry::make('addr_street')->label('Street')->columnSpanFull()->weight('semibold'),
@@ -102,38 +107,30 @@ class EnrollmentResource extends Resource
 
                 Infolists\Components\Group::make([
                     Infolists\Components\Section::make('Plan & checkout')
+                        ->description('Purchased item, chosen plan, and first checkout summary.')
                         ->icon('heroicon-o-credit-card')
                         ->schema([
                             Infolists\Components\TextEntry::make('status')
                                 ->badge()
-                                ->color(fn (string $state): string => match ($state) {
-                                    'confirmed' => 'success',
-                                    'paid' => 'success',
-                                    'partially_paid' => 'success',
-                                    'pending' => 'warning',
-                                    'failed' => 'danger',
-                                    'cancelled' => 'danger',
-                                    default => 'gray',
-                                })
-                                ->formatStateUsing(fn ($state) => match ($state) {
-                                    'pending' => 'Awaiting Payment',
-                                    'partially_paid' => 'Enrolled — DP paid (balance due)',
-                                    'confirmed' => 'Enrolled (fully paid)',
-                                    'paid' => 'Enrolled',
-                                    default => strtoupper((string) $state),
-                                })
+                                ->color(fn ($state): string|array => EnrollmentStatus::tryFromMixed($state)?->filamentColor() ?? 'gray')
+                                ->formatStateUsing(fn ($state): string => EnrollmentStatus::tryFromMixed($state)?->label() ?? strtoupper((string) $state))
                                 ->columnSpanFull(),
                             Infolists\Components\TextEntry::make('reference_number')
                                 ->label('Reference #')
                                 ->fontFamily('mono')
                                 ->copyable()
                                 ->weight('bold'),
-                            Infolists\Components\TextEntry::make('program.name')
-                                ->label('Program')
+                            Infolists\Components\TextEntry::make('purchasable_name_snapshot')
+                                ->label('Purchased item')
                                 ->weight('bold')
                                 ->color('primary'),
-                            Infolists\Components\TextEntry::make('schedule.label')
-                                ->label('Batch')
+                            Infolists\Components\TextEntry::make('batch_label')
+                                ->label('Batch (first item)')
+                                ->getStateUsing(function (Enrollment $record): ?string {
+                                    $item = $record->items()->with('schedule')->orderBy('id')->first();
+
+                                    return $item?->schedule?->label;
+                                })
                                 ->placeholder('—')
                                 ->weight('semibold'),
                             Infolists\Components\TextEntry::make('payment_type')
@@ -170,6 +167,7 @@ class EnrollmentResource extends Resource
                         ])->columns(['default' => 1, 'md' => 3]),
 
                     Infolists\Components\Section::make('Tuition & balance')
+                        ->description('Tuition pricing snapshots, paid amount, and remaining balance.')
                         ->icon('heroicon-o-calculator')
                         ->schema([
                             Infolists\Components\TextEntry::make('tuition_list_amount')
@@ -244,15 +242,14 @@ class EnrollmentResource extends Resource
                     ->weight('bold')
                     ->alignment(Alignment::Start),
 
-                Tables\Columns\TextColumn::make('program.name')
-                    ->label('Program')
+                Tables\Columns\TextColumn::make('purchasable_name_snapshot')
+                    ->label('Purchased item')
                     ->description(fn ($record) => match ($record->payment_type) {
                         'full' => 'Full payment',
                         'downpayment' => 'Downpayment',
                         default => ucfirst((string) $record->payment_type),
                     })
                     ->searchable()
-                    ->sortable()
                     ->wrap()
                     ->alignment(Alignment::Start),
 
@@ -275,22 +272,8 @@ class EnrollmentResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->alignment(Alignment::Start)
-                    ->color(fn (string $state): string => match ($state) {
-                        'confirmed' => 'success',
-                        'paid' => 'success',
-                        'partially_paid' => 'success',
-                        'pending' => 'warning',
-                        'failed' => 'danger',
-                        'cancelled' => 'danger',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn ($state) => match ($state) {
-                        'pending' => 'Awaiting payment',
-                        'partially_paid' => 'Partial — balance due',
-                        'confirmed' => 'Enrolled (fully paid)',
-                        'paid' => 'Enrolled',
-                        default => strtoupper((string) $state),
-                    })
+                    ->color(fn ($state): string|array => EnrollmentStatus::tryFromMixed($state)?->filamentColor() ?? 'gray')
+                    ->formatStateUsing(fn ($state): string => EnrollmentStatus::tryFromMixed($state)?->label() ?? strtoupper((string) $state))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
@@ -305,13 +288,76 @@ class EnrollmentResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('status')
-                    ->options([
-                        'pending' => 'Awaiting payment',
-                        'partially_paid' => 'Partial — balance due',
-                        'confirmed' => 'Enrolled (fully paid)',
-                        'paid' => 'Enrolled',
-                        'cancelled' => 'Cancelled',
-                    ]),
+                    ->options(EnrollmentStatus::filterOptions())
+                    ->query(function (Builder $query, array $data): Builder {
+                        $value = $data['value'] ?? null;
+
+                        if (is_string($value) && $value !== '') {
+                            return $query->where('status', $value);
+                        }
+
+                        return $query;
+                    }),
+                SelectFilter::make('purchased_item')
+                    ->label('Purchased')
+                    ->options(function (): array {
+                        $packages = Package::query()
+                            ->orderBy('sort_order')
+                            ->pluck('name', 'id')
+                            ->mapWithKeys(fn ($name, $id) => ["package:{$id}" => "Package — {$name}"]);
+
+                        $programs = Program::query()
+                            ->orderBy('sort_order')
+                            ->pluck('name', 'id')
+                            ->mapWithKeys(fn ($name, $id) => ["program:{$id}" => "Program — {$name}"]);
+
+                        return $packages->merge($programs)->all();
+                    })
+                    ->searchable()
+                    ->query(function (Builder $query, array $data): Builder {
+                        $value = $data['value'] ?? null;
+                        if (! is_string($value) || ! str_contains($value, ':')) {
+                            return $query;
+                        }
+
+                        [$type, $id] = explode(':', $value, 2);
+                        if (! ctype_digit((string) $id)) {
+                            return $query;
+                        }
+
+                        $class = match ($type) {
+                            'package' => Package::class,
+                            'program' => Program::class,
+                            default => null,
+                        };
+                        if (! $class) {
+                            return $query;
+                        }
+
+                        return $query
+                            ->where('purchasable_type', $class)
+                            ->where('purchasable_id', (int) $id);
+                    }),
+                SelectFilter::make('included_program_id')
+                    ->label('Included Program')
+                    ->options(fn (): array => Program::query()
+                        ->orderBy('sort_order')
+                        ->pluck('name', 'id')
+                        ->all())
+                    ->searchable()
+                    ->query(function (Builder $query, array $data): Builder {
+                        $value = $data['value'] ?? null;
+                        if (! is_numeric($value)) {
+                            return $query;
+                        }
+
+                        return $query->whereExists(function ($sub) use ($value) {
+                            $sub->selectRaw('1')
+                                ->from('enrollment_items')
+                                ->whereColumn('enrollment_items.enrollment_id', 'enrollments.id')
+                                ->where('enrollment_items.program_id', (int) $value);
+                        });
+                    }),
                 SelectFilter::make('payment_type')
                     ->label('Payment Type')
                     ->options([
@@ -327,6 +373,7 @@ class EnrollmentResource extends Resource
                     ->color('warning')
                     ->tooltip('Copy payment link for student to pay remaining tuition')
                     ->visible(fn (Enrollment $record): bool => $record->payment_type === 'downpayment'
+                        && (int) $record->amount_paid_tuition > 0
                         && $record->computed_balance_tuition_due > 0)
                     ->action(function (Enrollment $record, $livewire): void {
                         $payUrl = URL::temporarySignedRoute(
