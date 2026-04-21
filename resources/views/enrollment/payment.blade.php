@@ -91,13 +91,13 @@
                     </div>
                     @endif
                     <div class="flex justify-between py-1.5 border-b border-gray-50">
-                        <span class="text-gray-400">Program</span>
+                        <span class="text-gray-400">Program / Package</span>
                         <div class="text-right max-w-[65%]">
-                            <span class="font-medium text-gray-800 block">{{ $program->name }}</span>
-                            @if($program->isEarlyBirdActive())
+                            <span class="font-medium text-gray-800 block">{{ $purchasable->name }}</span>
+                            @if(method_exists($purchasable, 'isEarlyBirdActive') && $purchasable->isEarlyBirdActive())
                                 <span class="text-[9px] text-accent-600 font-bold bg-accent-50 px-1 py-0.5 rounded inline-block mt-0.5 uppercase tracking-wider">Early Bird Validated</span>
-                            @elseif(!empty($program->early_bird_label))
-                                <span class="text-[9px] text-gray-400 font-medium block mt-0.5 leading-tight">{{ $program->early_bird_label }}</span>
+                            @elseif(!empty($purchasable->early_bird_label))
+                                <span class="text-[9px] text-gray-400 font-medium block mt-0.5 leading-tight">{{ $purchasable->early_bird_label }}</span>
                             @endif
                         </div>
                     </div>
@@ -119,13 +119,11 @@
                     <div class="flex justify-between py-1.5 text-xs">
                         <span class="text-gray-400">Inclusions</span>
                         <ul class="font-medium text-gray-600 text-right max-w-[70%] space-y-1">
-                            @if(is_array($program->inclusions))
-                                @foreach($program->inclusions as $inc)
-                                    <li>{{ $inc }}</li>
-                                @endforeach
-                            @else
-                                <li>{{ $program->inclusions }}</li>
-                            @endif
+                            @forelse(($includedPrograms ?? collect()) as $incProgram)
+                                <li>{{ $incProgram->name }}</li>
+                            @empty
+                                <li>—</li>
+                            @endforelse
                         </ul>
                     </div>
                 </div>
@@ -232,7 +230,7 @@
 
                 <div class="space-y-3 text-sm mb-4">
                     <div class="flex justify-between items-start gap-4">
-                        <span class="text-gray-500 flex-1">{{ $program->name }} <span class="text-xs text-brand-600 font-bold ml-1">[{{ $enrollment->payment_type === 'downpayment' ? 'DP' : 'FULL' }}]</span></span>
+                        <span class="text-gray-500 flex-1">{{ $purchasable->name }} <span class="text-xs text-brand-600 font-bold ml-1">[{{ $enrollment->payment_type === 'downpayment' ? 'DP' : 'FULL' }}]</span></span>
                         <span class="font-semibold text-gray-800">₱{{ number_format($enrollment->base_amount) }}</span>
                     </div>
                     <div class="flex justify-between">

@@ -23,11 +23,9 @@ class EnrollmentFinancialLedgerTest extends TestCase
             'category' => 'Individual Programs (Theoretical)',
             'tag' => null,
             'price_full' => 10_000,
-            'price_dp' => 5_000,
             'price_early' => 8_000,
             'early_deadline' => '2026-07-15',
             'early_bird_label' => 'Early',
-            'inclusions' => ['A'],
             'is_active' => true,
             'sort_order' => 0,
         ], $overrides));
@@ -87,7 +85,7 @@ class EnrollmentFinancialLedgerTest extends TestCase
 
         $enrollment->refresh();
 
-        $this->assertSame('partially_paid', $enrollment->status);
+        $this->assertSame('partially_paid', $enrollment->status->value);
         $this->assertSame(5_000, $enrollment->amount_paid_tuition);
         $this->assertSame(3_000, $enrollment->balance_tuition_due);
         $this->assertSame(3_000, $enrollment->computed_balance_tuition_due);
@@ -120,7 +118,7 @@ class EnrollmentFinancialLedgerTest extends TestCase
         $enrollment->refresh();
 
         $this->assertSame(5_000, $enrollment->amount_paid_tuition);
-        $this->assertSame('partially_paid', $enrollment->status);
+        $this->assertSame('partially_paid', $enrollment->status->value);
 
         Carbon::setTestNow();
     }
@@ -147,7 +145,7 @@ class EnrollmentFinancialLedgerTest extends TestCase
         $enrollment->refresh();
 
         $this->assertSame(5_000, $enrollment->amount_paid_tuition);
-        $this->assertSame('partially_paid', $enrollment->status);
+        $this->assertSame('partially_paid', $enrollment->status->value);
         $this->assertSame(3_000, $enrollment->balance_tuition_due);
 
         Carbon::setTestNow();
@@ -180,7 +178,7 @@ class EnrollmentFinancialLedgerTest extends TestCase
         app(EnrollmentFinancialService::class)->recalculateEnrollmentFinancials($enrollment->fresh());
         $enrollment->refresh();
 
-        $this->assertSame('confirmed', $enrollment->status);
+        $this->assertSame('confirmed', $enrollment->status->value);
         $this->assertSame(0, $enrollment->balance_tuition_due);
     }
 
@@ -271,7 +269,7 @@ class EnrollmentFinancialLedgerTest extends TestCase
 
         $this->assertSame(8_000, $enrollment->amount_paid_tuition);
         $this->assertSame(0, $enrollment->balance_tuition_due);
-        $this->assertSame('confirmed', $enrollment->status);
+        $this->assertSame('confirmed', $enrollment->status->value);
 
         Carbon::setTestNow();
     }

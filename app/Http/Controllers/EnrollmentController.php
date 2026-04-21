@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\EnrollPayRequest;
 use App\Http\Requests\StoreEnrollmentRequest;
 use App\Models\Enrollment;
+use App\Models\Package;
 use App\Models\Program;
 use App\Services\EnrollmentFinancialService;
 use App\Services\EnrollmentService;
@@ -25,20 +26,34 @@ class EnrollmentController extends Controller
      */
     public function landing()
     {
-        $programCategories = $this->enrollmentService->getGroupedActivePrograms();
+        $packages = Package::query()
+            ->where('is_active', true)
+            ->with(['programs:id,name,slug'])
+            ->orderBy('sort_order')
+            ->get();
 
-        return view('enrollment.landing', compact('programCategories'));
+        return view('enrollment.landing', compact('packages'));
     }
 
     /**
      * Enrollment form page.
      */
-    public function form()
+    public function form(Request $request)
     {
+        if (! $request->boolean('resume') && ! $request->session()->hasOldInput()) {
+            $request->session()->forget('enrollment_data');
+        }
+
+        $packages = Package::query()
+            ->where('is_active', true)
+            ->with(['programs:id,name,slug'])
+            ->orderBy('sort_order')
+            ->get();
+
         $programCategories = $this->enrollmentService->getGroupedActivePrograms();
         $oldData = session('enrollment_data', []);
 
-        return view('enrollment.form', compact('programCategories', 'oldData'));
+        return view('enrollment.form', compact('packages', 'programCategories', 'oldData'));
     }
 
     /**
@@ -65,10 +80,13 @@ class EnrollmentController extends Controller
             return redirect()->route('enroll.form');
         }
 
-        $program = Program::where('slug', $oldData['program'])->firstOrFail();
+        $slug = (string) $oldData['program'];
+        $purchasable = Package::query()->where('slug', $slug)->first()
+            ?? Program::query()->where('slug', $slug)->firstOrFail();
+
         $schedule = null;
-        if (! empty($oldData['schedule_id'])) {
-            $schedule = $program->schedules()
+        if ($purchasable instanceof Program && ! empty($oldData['schedule_id'])) {
+            $schedule = $purchasable->schedules()
                 ->where('id', $oldData['schedule_id'])
                 ->first();
         }
@@ -80,14 +98,15 @@ class EnrollmentController extends Controller
         $enrollment->surname = $oldData['surname'];
         $enrollment->payment_type = $oldData['payment_type'] ?? 'full';
 
-        $enrollment->base_amount = ($enrollment->payment_type === 'full') ? $program->active_price : $program->price_dp;
+        $enrollment->base_amount = ($enrollment->payment_type === 'full') ? $purchasable->active_price : $purchasable->downpayment_amount;
         $enrollment->convenience_fee = 50;
         $enrollment->total_amount = $enrollment->base_amount + $enrollment->convenience_fee;
 
         return view('enrollment.payment', [
             'enrollment' => $enrollment,
-            'program' => $program,
+            'purchasable' => $purchasable,
             'schedule' => $schedule,
+            'includedPrograms' => $purchasable instanceof Package ? $purchasable->programs : collect(),
         ]);
     }
 
@@ -103,7 +122,16 @@ class EnrollmentController extends Controller
         }
 
         try {
-            $enrollment = $this->enrollmentService->createEnrollment($oldData);
+            $enrollmentId = $request->session()->get('current_enrollment_id');
+            $enrollment = $enrollmentId
+                ? Enrollment::query()->whereKey($enrollmentId)->first()
+                : null;
+
+            if (! $enrollment) {
+                $enrollment = $this->enrollmentService->createEnrollment($oldData);
+                $request->session()->put('current_enrollment_id', $enrollment->getKey());
+            }
+
             $checkout = $this->paymongoService->createCheckoutSession(
                 $enrollment,
                 $request->validated('payment_method')
@@ -137,7 +165,7 @@ class EnrollmentController extends Controller
 
         $referenceNumber = $request->query('ref') ?: $request->session()->get('latest_enrollment_ref');
         if ($referenceNumber) {
-            $enrollment = Enrollment::with(['program', 'schedule', 'payments'])
+            $enrollment = Enrollment::with(['purchasable', 'payments', 'items.program'])
                 ->where('reference_number', $referenceNumber)
                 ->first();
         }
@@ -168,13 +196,15 @@ class EnrollmentController extends Controller
 
         return view('enrollment.success', [
             'enrollment' => $enrollment,
-            'program' => $enrollment->program,
-            'schedule' => $enrollment->schedule,
+            'purchasable' => $enrollment->purchasable,
+            'items' => $enrollment->items,
         ]);
     }
 
     public function cancel(Request $request)
     {
+        $request->session()->forget(['enrollment_data', 'current_enrollment_id', 'balance_checkout_enrollment_id']);
+
         return view('enrollment.cancel', [
             'referenceNumber' => $request->query('ref'),
         ]);

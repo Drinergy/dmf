@@ -15,8 +15,8 @@ class Schedule extends Model
 
     protected $casts = [
         'start_date' => 'date',
-        'end_date'   => 'date',
-        'is_active'  => 'boolean',
+        'end_date' => 'date',
+        'is_active' => 'boolean',
     ];
 
     public function program(): BelongsTo
@@ -24,8 +24,8 @@ class Schedule extends Model
         return $this->belongsTo(Program::class);
     }
 
-    public function enrollments(): HasMany
+    public function enrollmentItems(): HasMany
     {
-        return $this->hasMany(Enrollment::class);
+        return $this->hasMany(EnrollmentItem::class);
     }
 }

@@ -120,55 +120,51 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @php
                 // Display only the first 3 packages from the main category
-                $topPackages = $programCategories->get('Review Packages', collect())->take(3);
+                $topPackages = ($packages ?? collect())->take(3);
             @endphp
             
-            @foreach($topPackages as $program)
+            @foreach($topPackages as $package)
             @php
-                $isEarlyBirdActive = isset($program->early_deadline) && now()->timezone('Asia/Manila')->startOfDay() <= \Carbon\Carbon::parse($program->early_deadline);
-                $activeFullPrice = $isEarlyBirdActive ? $program->price_early : $program->price_full;
+                $isEarlyBirdActive = $package->isEarlyBirdActive();
             @endphp
             <div class="relative program-card rounded-2xl border border-gray-100 shadow-soft bg-white p-6 flex flex-col h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group">
                 <div class="mb-5">
-                    @if($program->tag)
-                        <span class="inline-block px-3 py-1 bg-brand-50 text-brand-700 text-[11px] font-bold rounded-full mb-3 uppercase tracking-wider">{{ $program->tag }}</span>
+                    @if($package->tag)
+                        <span class="inline-block px-3 py-1 bg-brand-50 text-brand-700 text-[11px] font-bold rounded-full mb-3 uppercase tracking-wider">{{ $package->tag }}</span>
                     @endif
-                    <h4 class="text-xl font-extrabold text-gray-900 leading-tight mb-5">{{ $program->name }}</h4>
+                    <h4 class="text-xl font-extrabold text-gray-900 leading-tight mb-5">{{ $package->name }}</h4>
                     
                     <div class="p-4 bg-gray-50 rounded-xl mb-4 group-hover:bg-brand-50 transition-colors duration-300">
                         <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-semibold">Full Price</p>
                         @if($isEarlyBirdActive)
                             <p class="font-bold text-gray-900 text-sm flex items-center gap-2">
-                                <span class="line-through text-gray-400 font-normal text-xs">₱{{ number_format($program->price_full) }}</span>
-                                <span class="text-2xl text-accent-600 font-extrabold">₱{{ number_format($program->price_early) }}</span>
+                                <span class="line-through text-gray-400 font-normal text-xs">₱{{ number_format($package->price_full) }}</span>
+                                <span class="text-2xl text-accent-600 font-extrabold">₱{{ number_format($package->price_early) }}</span>
                             </p>
                             <span class="text-[10px] text-white font-bold bg-accent-500 px-1.5 py-0.5 rounded shadow-sm inline-block mt-2 uppercase tracking-wide">Early Bird Active!</span>
                         @else
-                            <p class="text-2xl font-extrabold text-gray-900">₱{{ number_format($program->price_full) }}</p>
-                            @if($program->early_bird)
-                                <p class="text-[10px] text-gray-500 mt-1.5 leading-tight font-medium">{{ $program->early_bird }}</p>
-                            @endif
+                            <p class="text-2xl font-extrabold text-gray-900">₱{{ number_format($package->price_full) }}</p>
                         @endif
                     </div>
                     
                     <div class="flex items-center justify-between text-sm px-1">
                         <span class="text-gray-500 font-medium">Downpayment</span>
-                        <span class="font-bold text-gray-900">₱{{ number_format($program->price_dp) }}</span>
+                        <span class="font-bold text-gray-900">₱{{ number_format($package->downpayment_amount) }}</span>
                     </div>
                 </div>
 
                 <ul class="space-y-3.5 flex-1 mb-8 mt-4 text-sm text-gray-600 border-t border-gray-100 pt-5 pr-2">
-                    @foreach($program->inclusions as $inc)
+                    @foreach($package->programs as $incProgram)
                     <li class="flex items-start gap-3">
                         <span class="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mt-0.5">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         </span>
-                        <span class="leading-snug font-medium">{{ $inc }}</span>
+                        <span class="leading-snug font-medium">{{ $incProgram->name }}</span>
                     </li>
                     @endforeach
                 </ul>
 
-                <a href="{{ url('/enroll') }}?program={{ $program->slug }}" class="mt-auto block text-center px-6 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 bg-white border-2 border-brand-100 text-brand-700 hover:border-brand-600 hover:bg-brand-600 hover:text-white active:scale-[0.98]">
+                <a href="{{ url('/enroll') }}?program={{ $package->slug }}" class="mt-auto block text-center px-6 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 bg-white border-2 border-brand-100 text-brand-700 hover:border-brand-600 hover:bg-brand-600 hover:text-white active:scale-[0.98]">
                     Select Package
                 </a>
             </div>

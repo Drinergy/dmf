@@ -72,6 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Batch dropdown (only when applicable)
             if (scheduleSection && scheduleSelect) {
+                const kind = this.getAttribute('data-kind') || 'program';
+                if (kind === 'package') {
+                    scheduleSection.style.display = 'none';
+                    scheduleSelect.value = '';
+                    return;
+                }
+
                 const raw = this.getAttribute('data-schedules') || '[]';
                 let schedules = [];
                 try {
@@ -80,7 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     schedules = [];
                 }
 
-                scheduleSelect.innerHTML = '<option value=\"\">Select a batch</option>';
+                scheduleSelect.replaceChildren();
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = 'Select a batch';
+                scheduleSelect.appendChild(placeholder);
 
                 if (Array.isArray(schedules) && schedules.length > 0) {
                     schedules.forEach(s => {

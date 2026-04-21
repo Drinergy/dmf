@@ -24,11 +24,9 @@ class EnrollmentScheduleValidationTest extends TestCase
             'category' => 'Individual Programs (Theoretical)',
             'tag' => null,
             'price_full' => 10000,
-            'price_dp' => 5000,
             'price_early' => null,
             'early_deadline' => null,
             'early_bird_label' => null,
-            'inclusions' => ['Test inclusion'],
             'is_active' => true,
             'sort_order' => 0,
         ], $overrides));

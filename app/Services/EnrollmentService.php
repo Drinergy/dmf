@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Enrollment;
+use App\Models\EnrollmentItem;
+use App\Models\Package;
 use App\Models\Program;
 use App\Models\Schedule;
 use Illuminate\Support\Collection;
@@ -32,36 +34,42 @@ class EnrollmentService
      */
     public function createEnrollment(array $data): Enrollment
     {
-        $program = Program::where('slug', $data['program'])->firstOrFail();
-        $scheduleId = $data['schedule_id'] ?? null;
+        $slug = (string) ($data['program'] ?? '');
+        $purchasable = Package::query()->where('slug', $slug)->first()
+            ?? Program::query()->where('slug', $slug)->firstOrFail();
 
-        if (empty($scheduleId)) {
-            $activeSchedules = $program->schedules()
-                ->where('is_active', true)
-                ->orderBy('created_at', 'desc')
-                ->limit(2)
-                ->get(['id']);
+        $scheduleId = $this->normalizeOptionalInt($data['schedule_id'] ?? null);
+        if ($purchasable instanceof Program) {
+            if (empty($scheduleId)) {
+                $activeSchedules = $purchasable->schedules()
+                    ->where('is_active', true)
+                    ->orderBy('created_at', 'desc')
+                    ->limit(2)
+                    ->get(['id']);
 
-            if ($activeSchedules->count() === 1) {
-                $scheduleId = $activeSchedules->first()->id;
+                if ($activeSchedules->count() === 1) {
+                    $scheduleId = $activeSchedules->first()->id;
+                }
             }
+        } else {
+            $scheduleId = null;
         }
 
         $baseAmount = ($data['payment_type'] === 'full')
-            ? $program->active_price
-            : $program->price_dp;
+            ? (int) $purchasable->active_price
+            : (int) $purchasable->downpayment_amount;
 
         $convenienceFee = EnrollmentPricingService::CONVENIENCE_FEE_PESOS;
         $totalAmount = $baseAmount + $convenienceFee;
 
-        $list = (int) $program->price_full;
-        $early = $program->price_early !== null ? (int) $program->price_early : null;
-        $deadline = $program->early_deadline;
-        $dpSnapshot = (int) $program->price_dp;
+        $list = (int) $purchasable->price_full;
+        $early = $purchasable->price_early !== null ? (int) $purchasable->price_early : null;
+        $deadline = $purchasable->early_deadline;
+        $dpSnapshot = (int) $purchasable->downpayment_amount;
 
         $discountAmount = 0;
         $discountLabel = null;
-        if ($early !== null && $deadline !== null && $program->isEarlyBirdActive()) {
+        if ($early !== null && $deadline !== null && $purchasable->isEarlyBirdActive()) {
             $discountAmount = max(0, $list - $early);
             $discountLabel = 'Early bird';
         }
@@ -94,8 +102,10 @@ class EnrollmentService
             'year_graduated' => $data['year_graduated'] ?? null,
             'taker_status' => $data['taker_status'],
 
-            'program_id' => $program->id,
-            'schedule_id' => $scheduleId,
+            'purchasable_type' => $purchasable::class,
+            'purchasable_id' => $purchasable->getKey(),
+            'purchasable_name_snapshot' => (string) $purchasable->name,
+            'purchasable_slug_snapshot' => (string) $purchasable->slug,
 
             'payment_type' => $data['payment_type'],
             'base_amount' => $baseAmount,
@@ -115,12 +125,66 @@ class EnrollmentService
         $enrollment->balance_tuition_due = EnrollmentPricingService::balanceTuitionDue($enrollment);
         $enrollment->saveQuietly();
 
+        $this->createEnrollmentItems($enrollment, $purchasable, $scheduleId);
+
         return $enrollment;
+    }
+
+    private function normalizeOptionalInt(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_int($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && is_numeric($value)) {
+            return (int) $value;
+        }
+
+        return null;
+    }
+
+    private function createEnrollmentItems(Enrollment $enrollment, Program|Package $purchased, ?int $scheduleId): void
+    {
+        if ($purchased instanceof Package) {
+            $includedPrograms = $purchased->programs()->where('is_active', true)->get();
+
+            foreach ($includedPrograms as $included) {
+                EnrollmentItem::query()->create([
+                    'enrollment_id' => $enrollment->getKey(),
+                    'program_id' => $included->getKey(),
+                    'schedule_id' => null,
+                    'status' => (string) $enrollment->status->value,
+                    'program_name_snapshot' => (string) $included->name,
+                    'program_slug_snapshot' => (string) $included->slug,
+                    'schedule_label_snapshot' => null,
+                    'schedule_mode_snapshot' => null,
+                ]);
+            }
+
+            return;
+        }
+
+        $schedule = $scheduleId ? Schedule::query()->find($scheduleId) : null;
+
+        EnrollmentItem::query()->create([
+            'enrollment_id' => $enrollment->getKey(),
+            'program_id' => $purchased->getKey(),
+            'schedule_id' => $scheduleId,
+            'status' => (string) $enrollment->status->value,
+            'program_name_snapshot' => (string) $purchased->name,
+            'program_slug_snapshot' => (string) $purchased->slug,
+            'schedule_label_snapshot' => $schedule?->label,
+            'schedule_mode_snapshot' => $schedule?->mode,
+        ]);
     }
 
     public function getScheduleForEnrollmentData(array $data): ?Schedule
     {
-        $scheduleId = $data['schedule_id'] ?? null;
+        $scheduleId = $this->normalizeOptionalInt($data['schedule_id'] ?? null);
         if (empty($scheduleId)) {
             return null;
         }

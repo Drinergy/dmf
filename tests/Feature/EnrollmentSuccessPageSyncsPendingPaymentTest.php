@@ -28,11 +28,9 @@ class EnrollmentSuccessPageSyncsPendingPaymentTest extends TestCase
             'category' => 'Individual Programs (Theoretical)',
             'tag' => null,
             'price_full' => 30_000,
-            'price_dp' => 12_000,
             'price_early' => 24_000,
             'early_deadline' => '2026-07-15',
             'early_bird_label' => 'Early',
-            'inclusions' => ['A'],
             'is_active' => true,
             'sort_order' => 0,
         ]);
@@ -69,9 +67,9 @@ class EnrollmentSuccessPageSyncsPendingPaymentTest extends TestCase
             'enrollment_id' => $enrollment->id,
             'purpose' => Payment::PURPOSE_INITIAL,
             'payment_method' => 'gcash',
-            'amount' => (12_000 + EnrollmentPricingService::CONVENIENCE_FEE_PESOS) * 100,
+            'amount' => (15_000 + EnrollmentPricingService::CONVENIENCE_FEE_PESOS) * 100,
             'currency' => 'PHP',
-            'tuition_amount' => 12_000,
+            'tuition_amount' => 15_000,
             'status' => 'pending',
             'paymongo_checkout_session_id' => $checkoutSessionId,
         ]);
@@ -101,8 +99,8 @@ class EnrollmentSuccessPageSyncsPendingPaymentTest extends TestCase
         $enrollment->refresh();
 
         $this->assertSame('paid', Payment::query()->where('enrollment_id', $enrollment->id)->first()->status);
-        $this->assertSame(12_000, $enrollment->amount_paid_tuition);
-        $this->assertSame(12_000, $enrollment->computed_balance_tuition_due);
+        $this->assertSame(15_000, $enrollment->amount_paid_tuition);
+        $this->assertSame(9_000, $enrollment->computed_balance_tuition_due);
 
         Carbon::setTestNow();
     }

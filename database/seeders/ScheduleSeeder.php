@@ -63,21 +63,21 @@ class ScheduleSeeder extends Seeder
                 ->where('slug', $schedule['program_slug'])
                 ->first();
 
-            if (!$program) {
+            if (! $program) {
                 continue;
             }
 
             Schedule::firstOrCreate(
                 [
                     'program_id' => $program->id,
-                    'label'      => $schedule['label'],
-                    'mode'       => $schedule['mode'],
+                    'label' => $schedule['label'],
+                    'mode' => $schedule['mode'],
                 ],
                 [
                     'start_date' => null,
-                    'end_date'   => null,
-                    'slots'      => $schedule['slots'],
-                    'is_active'  => true,
+                    'end_date' => null,
+                    'slots' => $schedule['slots'],
+                    'is_active' => true,
                 ]
             );
         }

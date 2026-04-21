@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('enrollment_id')
-                  ->unique()
-                  ->constrained('enrollments')
-                  ->onDelete('cascade');
+                ->unique()
+                ->constrained('enrollments')
+                ->onDelete('cascade');
 
             // PayMongo fields
             $table->string('paymongo_checkout_session_id')->nullable();

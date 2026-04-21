@@ -34,7 +34,7 @@
                     </div>
                     <div class="flex justify-between py-1.5 border-b border-gray-50">
                         <span class="text-gray-400">Program</span>
-                        <span class="font-medium text-gray-800 text-right">{{ $program->name }}</span>
+                        <span class="font-medium text-gray-800 text-right">{{ $purchasable_name }}</span>
                     </div>
                     <div class="flex justify-between py-1.5">
                         <span class="text-gray-400">Tuition paid to date</span>

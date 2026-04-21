@@ -4,8 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
-use Filament\Forms\Form;
 use Filament\Forms;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -15,13 +15,16 @@ class CategoryResource extends Resource
     protected static ?string $model = Category::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
+
     protected static ?string $navigationLabel = 'Categories';
+
     protected static ?int $navigationSort = 10;
-    protected static bool $shouldRegisterNavigation = false;
+
+    protected static bool $shouldRegisterNavigation = true;
 
     public static function canViewAny(): bool
     {
-        return app()->environment('local');
+        return true;
     }
 
     public static function form(Form $form): Form
@@ -79,10 +82,9 @@ class CategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListCategories::route('/'),
+            'index' => Pages\ListCategories::route('/'),
             'create' => Pages\CreateCategory::route('/create'),
-            'edit'   => Pages\EditCategory::route('/{record}/edit'),
+            'edit' => Pages\EditCategory::route('/{record}/edit'),
         ];
     }
 }
-

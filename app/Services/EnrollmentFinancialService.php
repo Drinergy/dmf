@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EnrollmentStatus;
 use App\Models\Enrollment;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +47,7 @@ final class EnrollmentFinancialService
         });
     }
 
-    private function resolveStatusFromLedger(Enrollment $enrollment): string
+    private function resolveStatusFromLedger(Enrollment $enrollment): EnrollmentStatus
     {
         $paidExists = Payment::query()
             ->where('enrollment_id', $enrollment->getKey())
@@ -54,13 +55,17 @@ final class EnrollmentFinancialService
             ->exists();
 
         if (! $paidExists) {
-            return $enrollment->status === 'cancelled' ? 'cancelled' : 'pending';
+            return $enrollment->status === EnrollmentStatus::CANCELLED
+                ? EnrollmentStatus::CANCELLED
+                : EnrollmentStatus::PENDING;
         }
 
         if ($enrollment->payment_type === 'full') {
-            return 'confirmed';
+            return EnrollmentStatus::CONFIRMED;
         }
 
-        return $enrollment->balance_tuition_due > 0 ? 'partially_paid' : 'confirmed';
+        return $enrollment->balance_tuition_due > 0
+            ? EnrollmentStatus::PARTIALLY_PAID
+            : EnrollmentStatus::CONFIRMED;
     }
 }
