@@ -4,18 +4,23 @@ namespace Tests\Feature;
 
 use App\Models\Program;
 use App\Models\Schedule;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class EnrollmentScheduleValidationTest extends TestCase
 {
-    use RefreshDatabase;
+    /**
+     * Avoid colliding with real programs from seeders (programs.slug is unique).
+     */
+    private function uniqueProgramSlug(string $prefix): string
+    {
+        return 'tst-'.$prefix.'-'.bin2hex(random_bytes(4));
+    }
 
     private function createProgram(array $overrides = []): Program
     {
         return Program::create(array_merge([
             'name' => 'Test Program',
-            'slug' => 'test-program',
+            'slug' => $this->uniqueProgramSlug('generic'),
             'category' => 'Individual Programs (Theoretical)',
             'tag' => null,
             'price_full' => 10000,
@@ -76,7 +81,7 @@ class EnrollmentScheduleValidationTest extends TestCase
 
     public function test_schedule_is_not_required_when_program_has_one_active_schedule(): void
     {
-        $program = $this->createProgram(['slug' => 'hybrid-intensive']);
+        $program = $this->createProgram(['slug' => $this->uniqueProgramSlug('one-sched')]);
         $this->createSchedule($program);
 
         $response = $this->post(route('enroll.store'), $this->basePayload([
@@ -90,7 +95,7 @@ class EnrollmentScheduleValidationTest extends TestCase
 
     public function test_schedule_is_required_when_program_has_multiple_active_schedules(): void
     {
-        $program = $this->createProgram(['slug' => 'practical-full-course']);
+        $program = $this->createProgram(['slug' => $this->uniqueProgramSlug('multi-sched')]);
         $this->createSchedule($program, ['label' => 'August 2026']);
         $this->createSchedule($program, ['label' => 'September 2026']);
 
@@ -104,8 +109,8 @@ class EnrollmentScheduleValidationTest extends TestCase
 
     public function test_schedule_must_belong_to_selected_program(): void
     {
-        $programA = $this->createProgram(['slug' => 'program-a', 'name' => 'Program A']);
-        $programB = $this->createProgram(['slug' => 'program-b', 'name' => 'Program B']);
+        $programA = $this->createProgram(['slug' => $this->uniqueProgramSlug('prog-a'), 'name' => 'Program A']);
+        $programB = $this->createProgram(['slug' => $this->uniqueProgramSlug('prog-b'), 'name' => 'Program B']);
 
         $this->createSchedule($programA); // ensures schedule is required for A
         $scheduleB = $this->createSchedule($programB, ['label' => 'September 2026']);
@@ -120,7 +125,7 @@ class EnrollmentScheduleValidationTest extends TestCase
 
     public function test_schedule_can_be_null_when_program_has_no_active_schedules(): void
     {
-        $program = $this->createProgram(['slug' => 'package-a', 'category' => 'Review Packages']);
+        $program = $this->createProgram(['slug' => $this->uniqueProgramSlug('no-sched'), 'category' => 'Review Packages']);
 
         $response = $this->post(route('enroll.store'), $this->basePayload([
             'program' => $program->slug,
@@ -131,4 +136,3 @@ class EnrollmentScheduleValidationTest extends TestCase
         $response->assertRedirect(route('enroll.payment'));
     }
 }
-

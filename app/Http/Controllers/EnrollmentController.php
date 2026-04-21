@@ -2,27 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use App\Http\Requests\EnrollPayRequest;
 use App\Http\Requests\StoreEnrollmentRequest;
-use App\Services\EnrollmentService;
-use App\Services\PaymongoService;
 use App\Models\Enrollment;
 use App\Models\Program;
+use App\Services\EnrollmentFinancialService;
+use App\Services\EnrollmentService;
+use App\Services\PaymongoService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EnrollmentController extends Controller
 {
     public function __construct(
         protected EnrollmentService $enrollmentService,
-        protected PaymongoService $paymongoService
+        protected PaymongoService $paymongoService,
+        protected EnrollmentFinancialService $enrollmentFinancialService,
     ) {}
+
     /**
      * Landing / Home page.
      */
     public function landing()
     {
         $programCategories = $this->enrollmentService->getGroupedActivePrograms();
+
         return view('enrollment.landing', compact('programCategories'));
     }
 
@@ -55,35 +59,35 @@ class EnrollmentController extends Controller
     public function payment(Request $request)
     {
         $oldData = session('enrollment_data');
-        
+
         // If session expired or they refreshed wildly, send back to form
-        if (!$oldData) {
+        if (! $oldData) {
             return redirect()->route('enroll.form');
         }
 
         $program = Program::where('slug', $oldData['program'])->firstOrFail();
         $schedule = null;
-        if (!empty($oldData['schedule_id'])) {
+        if (! empty($oldData['schedule_id'])) {
             $schedule = $program->schedules()
                 ->where('id', $oldData['schedule_id'])
                 ->first();
         }
 
-        // Pass a mocked transient Enrollment object to the view just so UI won't break 
+        // Pass a mocked transient Enrollment object to the view just so UI won't break
         // because it expects an active $enrollment model structure.
         $enrollment = new Enrollment($oldData);
-        $enrollment->first_name   = $oldData['first_name']; // ensure name helper fields exist explicitly
-        $enrollment->surname      = $oldData['surname'];
+        $enrollment->first_name = $oldData['first_name']; // ensure name helper fields exist explicitly
+        $enrollment->surname = $oldData['surname'];
         $enrollment->payment_type = $oldData['payment_type'] ?? 'full';
-        
-        $enrollment->base_amount  = ($enrollment->payment_type === 'full') ? $program->active_price : $program->price_dp;
+
+        $enrollment->base_amount = ($enrollment->payment_type === 'full') ? $program->active_price : $program->price_dp;
         $enrollment->convenience_fee = 50;
-        $enrollment->total_amount    = $enrollment->base_amount + $enrollment->convenience_fee;
+        $enrollment->total_amount = $enrollment->base_amount + $enrollment->convenience_fee;
 
         return view('enrollment.payment', [
             'enrollment' => $enrollment,
-            'program'    => $program,
-            'schedule'   => $schedule,
+            'program' => $program,
+            'schedule' => $schedule,
         ]);
     }
 
@@ -94,7 +98,7 @@ class EnrollmentController extends Controller
     {
         $oldData = session('enrollment_data');
 
-        if (!$oldData) {
+        if (! $oldData) {
             return redirect()->route('enroll.form');
         }
 
@@ -133,29 +137,39 @@ class EnrollmentController extends Controller
 
         $referenceNumber = $request->query('ref') ?: $request->session()->get('latest_enrollment_ref');
         if ($referenceNumber) {
-            $enrollment = Enrollment::with(['program', 'schedule'])
+            $enrollment = Enrollment::with(['program', 'schedule', 'payments'])
                 ->where('reference_number', $referenceNumber)
                 ->first();
         }
 
-        if (!$enrollment) {
+        if (! $enrollment) {
             $checkoutSessionId = $request->query('checkout_session_id') ?: $request->query('id');
             if ($checkoutSessionId) {
                 $enrollment = $this->paymongoService->syncCheckoutSessionStatus($checkoutSessionId);
             }
         }
 
-        if (!$enrollment) {
+        if (! $enrollment) {
             return redirect()->route('enroll.form')
                 ->with('error', 'Enrollment session not found. Please try again.');
         }
 
-        $request->session()->forget(['current_enrollment_id', 'enrollment_data', 'latest_enrollment_ref', 'latest_payment_id']);
+        // success_url only includes ?ref=… — PayMongo may not have delivered the webhook yet,
+        // so the initial payment row can still be "pending". Sync checkout status before ledger math.
+        $this->paymongoService->syncPendingCheckoutSessionsForEnrollment($enrollment);
+        $enrollment->refresh();
+        $enrollment->load('payments');
+
+        $this->enrollmentFinancialService->recalculateEnrollmentFinancials($enrollment);
+        $enrollment->refresh();
+        $enrollment->load('payments');
+
+        $request->session()->forget(['current_enrollment_id', 'enrollment_data', 'latest_enrollment_ref', 'latest_payment_id', 'balance_checkout_enrollment_id']);
 
         return view('enrollment.success', [
             'enrollment' => $enrollment,
-            'program'    => $enrollment->program,
-            'schedule'   => $enrollment->schedule,
+            'program' => $enrollment->program,
+            'schedule' => $enrollment->schedule,
         ]);
     }
 

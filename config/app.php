@@ -69,6 +69,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Display timezone (Philippines)
+    |--------------------------------------------------------------------------
+    |
+    | Use for Filament and other UI that should show wall-clock time in
+    | Asia/Manila while APP_TIMEZONE may remain UTC for logs and jobs.
+    |
+    */
+
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Asia/Manila'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

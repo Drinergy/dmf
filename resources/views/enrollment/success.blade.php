@@ -1,7 +1,7 @@
 @extends('layouts.enrollment')
 
 @section('title', 'Enrollment Successful — DMF Dental Training Center')
-@section('meta_description', 'Your enrollment at DMF Dental Training Center is confirmed. Check your email for details.')
+@section('meta_description', 'Your enrollment at DMF Dental Training Center is confirmed.')
 
 
 
@@ -40,6 +40,14 @@
     </div>
 </div>
 
+
+@if(session('success'))
+<div class="max-w-2xl mx-auto px-4 sm:px-6 pt-4">
+    <div class="p-4 rounded-xl border border-emerald-100 bg-emerald-50 text-sm text-emerald-800 text-center font-medium">
+        {{ session('success') }}
+    </div>
+</div>
+@endif
 
 {{-- ── Main success card ── --}}
 <div class="max-w-2xl mx-auto px-4 sm:px-6 pb-16">
@@ -94,9 +102,15 @@
                     ['label' => 'Full Name',     'value' => $enrollment->full_name, 'icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
                     ['label' => 'Program',       'value' => $program->name,         'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'],
                     ['label' => 'Payment Type',  'value' => $enrollment->payment_type === 'downpayment' ? 'Downpayment' : 'Full Payment', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
-                    ['label' => 'Amount Paid',   'value' => '₱' . number_format($enrollment->total_amount), 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
                     ['label' => 'Date Enrolled', 'value' => $enrollment->created_at->timezone('Asia/Manila')->format('F j, Y'), 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
                 ];
+                if ($enrollment->payment_type === 'downpayment') {
+                    $bal = $enrollment->computed_balance_tuition_due;
+                    array_splice($details, 3, 0, [
+                        ['label' => 'Tuition paid (cumulative)', 'value' => '₱' . number_format($enrollment->amount_paid_tuition), 'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
+                        ['label' => 'Remaining tuition', 'value' => '₱' . number_format($bal), 'hint' => $bal > 0 ? 'Early-bird pricing applies if you complete payment on or before the discount end date. After that, the regular list price applies.' : null, 'icon' => 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 5h.01M12 12h3m-3 4h.01M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z'],
+                    ]);
+                }
                 if(!empty($schedule)) {
                     array_splice($details, 2, 0, [[
                         'label' => 'Batch',
@@ -113,29 +127,23 @@
                 @endphp
 
                 @foreach($details as $detail)
-                <div class="flex items-center gap-3 px-5 py-3.5 bg-white">
-                    <div class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0">
+                <div class="flex items-start gap-3 px-5 py-3.5 bg-white">
+                    <div class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="{{ $detail['icon'] }}"/>
                         </svg>
                     </div>
-                    <div class="flex-1 flex justify-between items-center min-w-0">
-                        <span class="text-sm text-gray-400 flex-shrink-0 mr-4">{{ $detail['label'] }}</span>
-                        <span class="font-semibold text-gray-800 text-sm text-right truncate">{{ $detail['value'] }}</span>
+                    <div class="flex-1 min-w-0 flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:items-start sm:gap-4">
+                        <span class="text-sm text-gray-400 flex-shrink-0">{{ $detail['label'] }}</span>
+                        <div class="min-w-0 sm:text-right">
+                            <span class="font-semibold text-gray-800 text-sm break-words block">{{ $detail['value'] }}</span>
+                            @if(! empty($detail['hint'] ?? null))
+                            <p class="text-xs font-normal text-gray-500 mt-1 sm:max-w-md sm:ml-auto sm:text-right leading-snug">{{ $detail['hint'] }}</p>
+                            @endif
+                        </div>
                     </div>
                 </div>
                 @endforeach
-            </div>
-
-            {{-- Email confirmation notice --}}
-            <div class="flex items-start gap-3 p-4 bg-amber-50 border border-amber-100 rounded-xl text-sm text-amber-800">
-                <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
-                <div>
-                    <p class="font-semibold text-amber-700">Check Your Email</p>
-                    <p class="text-amber-600/80 mt-0.5">A confirmation email with your enrollment details and next steps has been sent to your registered email address. Please check your spam/junk folder if you don't see it.</p>
-                </div>
             </div>
 
             {{-- Next steps --}}
@@ -145,7 +153,7 @@
                     @php
                     $nextSteps = [
                         ['step' => '1', 'text' => 'Our team will verify your enrollment within 24 hours.'],
-                        ['step' => '2', 'text' => 'We will send a detailed confirmation to your registered email address.'],
+                        ['step' => '2', 'text' => 'If we need anything else, we will reach you using the phone or email you provided.'],
                         ['step' => '3', 'text' => 'Join your first session on your scheduled date. Good luck!'],
                     ];
                     @endphp
@@ -158,19 +166,36 @@
                 </div>
             </div>
 
-            {{-- Action buttons --}}
-            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            @php
+                $payBalanceUrl = ($enrollment->payment_type === 'downpayment' && $enrollment->computed_balance_tuition_due > 0)
+                    ? \Illuminate\Support\Facades\URL::temporarySignedRoute('enroll.balance', now()->addYears(5), ['reference_number' => $enrollment->reference_number])
+                    : null;
+            @endphp
+
+            {{-- Action buttons: flex row + flex-1 so all CTAs share the same height --}}
+            <div class="flex flex-col sm:flex-row gap-3 pt-2 sm:items-stretch">
+                @if($payBalanceUrl)
+                <a href="{{ $payBalanceUrl }}"
+                   id="pay-balance-btn"
+                   class="success-cta order-first flex flex-1 flex-col items-center justify-center gap-2 px-4 py-4 min-h-[5.25rem] bg-accent-500 text-brand-950 font-extrabold rounded-xl shadow-sm hover:bg-accent-400 transition-all duration-200 text-center">
+                    <svg class="w-5 h-5 flex-shrink-0 opacity-90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="text-sm leading-snug">
+                        <span class="block">Pay remaining tuition</span>
+                        <span class="block text-xs font-extrabold mt-0.5 tracking-wide">₱{{ number_format($enrollment->computed_balance_tuition_due) }}</span>
+                    </span>
+                </a>
+                @endif
                 <a href="{{ url('/') }}"
                    id="back-home-btn"
-                   class="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-brand-600 text-white font-semibold rounded-xl shadow-sm hover:bg-brand-700 transition-all duration-200 text-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                    Back to Home
+                   class="success-cta flex flex-1 flex-col items-center justify-center gap-2 px-4 py-4 min-h-[5.25rem] bg-brand-600 text-white font-semibold rounded-xl shadow-sm hover:bg-brand-700 transition-all duration-200 text-center">
+                    <svg class="w-5 h-5 flex-shrink-0 opacity-95" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <span class="text-sm leading-snug">Back to Home</span>
                 </a>
                 <a href="{{ url('/enroll') }}"
                    id="enroll-another-btn"
-                   class="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-white text-brand-700 font-semibold rounded-xl border border-brand-100 hover:border-brand-300 hover:bg-brand-50 transition-all duration-200 text-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                    Enroll Another Person
+                   class="success-cta flex flex-1 flex-col items-center justify-center gap-2 px-4 py-4 min-h-[5.25rem] bg-white text-brand-700 font-semibold rounded-xl border border-brand-100 hover:border-brand-300 hover:bg-brand-50 transition-all duration-200 text-center">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                    <span class="text-sm leading-snug text-center text-balance px-1">Enroll another person</span>
                 </a>
             </div>
 
