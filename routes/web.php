@@ -19,7 +19,8 @@ Route::get('/enroll/balance/{reference_number}', [EnrollmentBalanceController::c
     ->middleware('signed')
     ->name('enroll.balance');
 
-Route::post('/enroll/balance/pay', [EnrollmentBalanceController::class, 'pay'])
+Route::post('/enroll/balance/{reference_number}/pay', [EnrollmentBalanceController::class, 'pay'])
+    ->middleware('signed')
     ->name('enroll.balance.pay');
 
 Route::post('/webhooks/paymongo', [PaymongoWebhookController::class, 'handle'])

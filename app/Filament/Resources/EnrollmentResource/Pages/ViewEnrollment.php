@@ -23,6 +23,7 @@ class ViewEnrollment extends ViewRecord
      * Sync tuition ledger from paid payments so the infolist shows correct cumulative tuition (legacy rows may have had `tuition_amount` = 0).
      *
      * @author CKD
+     *
      * @created 2026-03-26
      */
     public function mount(int|string $record): void
@@ -63,25 +64,18 @@ class ViewEnrollment extends ViewRecord
         $payBalanceUrl = $this->resolvePayBalanceSignedUrl();
         if ($payBalanceUrl !== null) {
             $actions[] = Actions\Action::make('copyPayBalanceLink')
-                ->label('Copy pay balance link')
+                ->label('Copy payment link')
                 ->icon('heroicon-m-clipboard-document')
                 ->color('warning')
                 ->action(function () use ($payBalanceUrl): void {
                     $this->js('window.navigator.clipboard.writeText('.Js::from($payBalanceUrl).')');
 
                     Notification::make()
-                        ->title('Pay balance link copied')
+                        ->title('Payment link copied')
                         ->body('Paste it into SMS, Messenger, Viber, or email for the student.')
                         ->success()
                         ->send();
                 });
-
-            $actions[] = Actions\Action::make('openPayBalancePage')
-                ->label('Preview pay balance page')
-                ->icon('heroicon-m-arrow-top-right-on-square')
-                ->color('gray')
-                ->url($payBalanceUrl)
-                ->openUrlInNewTab();
         }
 
         $actions[] = Actions\Action::make('back')

@@ -2,16 +2,16 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\CustomLogin;
+use App\Filament\Resources\EnrollmentResource\Pages\ListEnrollments;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables\View\TablesRenderHook;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets;
@@ -30,18 +30,13 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(\App\Filament\Pages\Auth\CustomLogin::class)
+            ->login(CustomLogin::class)
             ->brandName('DMF Dental Training Center')
             ->brandLogo(fn () => view('filament.brand'))
             ->favicon(asset('favicon.ico'))
             ->assets([
-                Css::make('dmf-filament-admin')
-                    ->html(function (): string {
-                        $path = public_path('css/filament-admin.css');
-                        $version = is_file($path) ? (string) filemtime($path) : (string) time();
-
-                        return "<link href=\"/css/filament-admin.css?v={$version}\" rel=\"stylesheet\" data-navigate-track />";
-                    }),
+                Css::make('dmf-filament-admin', public_path('css/filament-admin.css'))
+                    ->package('app'),
             ])
             ->navigation(false)
             ->topNavigation()
@@ -50,14 +45,14 @@ class AdminPanelProvider extends PanelProvider
                 // Primary = brand gold (accent color of the main site)
                 'primary' => Color::hex('#FAB21B'),
                 // Gray is mapped to the dark navy used on the main site
-                'gray'    => Color::Slate,
+                'gray' => Color::Slate,
             ])
             ->font('Inter')
             ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                // Removed generic Dashboard 
+                // Removed generic Dashboard
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
@@ -71,7 +66,7 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 TablesRenderHook::TOOLBAR_SEARCH_AFTER,
                 fn () => view('filament.tables.enrollments-refresh'),
-                scopes: \App\Filament\Resources\EnrollmentResource\Pages\ListEnrollments::class,
+                scopes: ListEnrollments::class,
             )
             ->middleware([
                 EncryptCookies::class,

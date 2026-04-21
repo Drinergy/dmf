@@ -7,12 +7,15 @@ use App\Filament\Resources\EnrollmentResource\RelationManagers;
 use App\Models\Enrollment;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\Alignment;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Js;
 
 class EnrollmentResource extends Resource
 {
@@ -49,7 +52,7 @@ class EnrollmentResource extends Resource
                                 ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
                                 ->columnSpanFull(),
                             Infolists\Components\TextEntry::make('birthday')
-                                ->date('F j, Y')
+                                ->date('F j, Y', config('app.display_timezone'))
                                 ->icon('heroicon-o-gift')
                                 ->weight('semibold'),
                             Infolists\Components\TextEntry::make('sex')
@@ -139,21 +142,29 @@ class EnrollmentResource extends Resource
                                 ->badge()
                                 ->color('gray'),
                             Infolists\Components\TextEntry::make('base_amount')
-                                ->label('Base')
+                                ->label(fn (Enrollment $record): string => match ($record->payment_type) {
+                                    'downpayment' => 'Downpayment (excl. convenience fee)',
+                                    'full' => 'Program charge (excl. convenience fee)',
+                                    default => 'Checkout amount (excl. convenience fee)',
+                                })
                                 ->money('PHP'),
                             Infolists\Components\TextEntry::make('convenience_fee')
-                                ->label('Fee')
+                                ->label('Convenience fee')
                                 ->money('PHP'),
                             Infolists\Components\TextEntry::make('total_amount')
-                                ->label('Initial checkout')
-                                ->helperText('Program portion plus one convenience fee.')
+                                ->label('First payment')
+                                ->hintIcon(
+                                    'heroicon-o-information-circle',
+                                    'First Paymongo checkout at enrollment. Should match the two amounts above. Later tuition is under Tuition & balance.',
+                                )
+                                ->hintColor('gray')
                                 ->money('PHP')
                                 ->weight('bold')
                                 ->color('primary')
                                 ->columnSpanFull(),
                             Infolists\Components\TextEntry::make('created_at')
                                 ->label('Submitted')
-                                ->dateTime('M j, Y g:i A')
+                                ->dateTime('M j, Y g:i A', config('app.display_timezone'))
                                 ->icon('heroicon-o-clock')
                                 ->columnSpanFull(),
                         ])->columns(['default' => 1, 'md' => 3]),
@@ -163,25 +174,41 @@ class EnrollmentResource extends Resource
                         ->schema([
                             Infolists\Components\TextEntry::make('tuition_list_amount')
                                 ->label('Regular list price')
-                                ->tooltip('Standard full tuition (published list price) after the early-bird window.')
+                                ->hintIcon(
+                                    'heroicon-o-information-circle',
+                                    'Standard full tuition (published list price) after the early-bird window.',
+                                )
+                                ->hintColor('gray')
                                 ->money('PHP')
                                 ->placeholder('—'),
                             Infolists\Components\TextEntry::make('tuition_price_early')
                                 ->label('Early-bird price')
-                                ->tooltip('Promotional tuition while the early-bird window is open.')
+                                ->hintIcon(
+                                    'heroicon-o-information-circle',
+                                    'Promotional tuition while the early-bird window is open.',
+                                )
+                                ->hintColor('gray')
                                 ->money('PHP')
                                 ->placeholder('—'),
                             Infolists\Components\TextEntry::make('tuition_early_deadline')
                                 ->label('Early-bird discount ends')
-                                ->tooltip('Through this date (Asia/Manila), the system uses the early-bird tuition total to calculate the balance; starting the next day, it uses the regular list price. That is only which price tier applies—not a requirement that the student pays the full balance in one payment by this date.')
-                                ->date('M j, Y')
+                                ->hintIcon(
+                                    'heroicon-o-information-circle',
+                                    'Through this date (Asia/Manila), the system uses the early-bird tuition total to calculate the balance; starting the next day, it uses the regular list price. That is only which price tier applies—not a requirement that the student pays the full balance in one payment by this date.',
+                                )
+                                ->hintColor('gray')
+                                ->date('M j, Y', config('app.display_timezone'))
                                 ->placeholder('—'),
                             Infolists\Components\TextEntry::make('amount_paid_tuition')
                                 ->label('Tuition paid')
                                 ->money('PHP'),
                             Infolists\Components\TextEntry::make('computed_balance_tuition_due')
                                 ->label('Remaining')
-                                ->tooltip('Outstanding tuition: early-bird total applies until the early-bird end date, then the regular list price; minus tuition paid to date. Convenience fees are per checkout.')
+                                ->hintIcon(
+                                    'heroicon-o-information-circle',
+                                    'Outstanding tuition: early-bird total applies until the early-bird end date, then the regular list price; minus tuition paid to date. Convenience fees are per checkout.',
+                                )
+                                ->hintColor('gray')
                                 ->money('PHP')
                                 ->weight('bold')
                                 ->color('danger')
@@ -230,20 +257,20 @@ class EnrollmentResource extends Resource
                     ->alignment(Alignment::Start),
 
                 Tables\Columns\TextColumn::make('total_amount')
-                    ->label('Checkout & balance')
-                    ->tooltip('Top: first checkout amount. Below: remaining tuition from the ledger (or no balance). Excludes convenience fees from tuition figures.')
+                    ->label('First payment')
+                    ->tooltip(function (Enrollment $record): string {
+                        $bal = (int) $record->computed_balance_tuition_due;
+                        $first = 'First Paymongo checkout when they enrolled. Tuition line plus one convenience fee. Not the same as remaining tuition.';
+                        if ($bal > 0) {
+                            return $first.' Remaining tuition: ₱'.number_format($bal).'.';
+                        }
+
+                        return $first.' No tuition balance left.';
+                    })
                     ->money('PHP')
                     ->sortable()
                     ->alignment(Alignment::Start)
-                    ->weight('bold')
-                    ->description(function (Enrollment $record): string {
-                        $bal = (int) $record->computed_balance_tuition_due;
-                        if ($bal > 0) {
-                            return 'Remaining tuition: ₱'.number_format($bal);
-                        }
-
-                        return 'No remaining balance';
-                    }),
+                    ->weight('bold'),
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
@@ -268,8 +295,10 @@ class EnrollmentResource extends Resource
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Enrolled')
-                    ->dateTime('M j, Y')
-                    ->tooltip(fn (Enrollment $record): string => $record->created_at->diffForHumans())
+                    ->dateTime('M j, Y', config('app.display_timezone'))
+                    ->tooltip(fn (Enrollment $record): string => $record->created_at
+                        ->timezone(config('app.display_timezone'))
+                        ->diffForHumans())
                     ->sortable()
                     ->alignment(Alignment::Start),
             ])
@@ -291,6 +320,29 @@ class EnrollmentResource extends Resource
                     ]),
             ])
             ->actions([
+                Tables\Actions\Action::make('copyPayBalanceLink')
+                    ->label('Copy payment link')
+                    ->icon('heroicon-m-clipboard-document')
+                    ->iconButton()
+                    ->color('warning')
+                    ->tooltip('Copy payment link for student to pay remaining tuition')
+                    ->visible(fn (Enrollment $record): bool => $record->payment_type === 'downpayment'
+                        && $record->computed_balance_tuition_due > 0)
+                    ->action(function (Enrollment $record, $livewire): void {
+                        $payUrl = URL::temporarySignedRoute(
+                            'enroll.balance',
+                            now()->addYears(5),
+                            ['reference_number' => $record->reference_number],
+                        );
+
+                        $livewire->js('window.navigator.clipboard.writeText('.Js::from($payUrl).')');
+
+                        Notification::make()
+                            ->title('Payment link copied')
+                            ->body('Paste it into SMS, Messenger, Viber, or email for the student.')
+                            ->success()
+                            ->send();
+                    }),
                 Tables\Actions\ViewAction::make()
                     ->iconButton()
                     ->tooltip('View Enrollment Record'),

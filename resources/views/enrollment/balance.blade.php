@@ -1,6 +1,6 @@
 @extends('layouts.enrollment')
 
-@section('title', 'Pay Remaining Balance — DMF Dental Training Center')
+@section('title', 'Pay Remaining Tuition — DMF Dental Training Center')
 @section('meta_description', 'Complete payment for your remaining program tuition.')
 
 @section('content')
@@ -11,7 +11,7 @@
     </a>
 
     <div class="mb-8">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-2">Remaining Balance</h1>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-2">Pay Remaining Tuition</h1>
         <p class="text-gray-500">Reference <span class="font-mono font-semibold text-brand-700">{{ $enrollment->reference_number }}</span></p>
     </div>
 
@@ -21,7 +21,7 @@
         </div>
     @endif
 
-    <form action="{{ route('enroll.balance.pay') }}" method="POST" class="flex flex-col lg:flex-row gap-6 items-start">
+    <form action="{{ $pay_url }}" method="POST" class="flex flex-col lg:flex-row gap-6 items-start">
         @csrf
 
         <div class="flex-1 space-y-6">
@@ -45,7 +45,7 @@
 
             <div class="bg-white rounded-2xl border border-gray-100 shadow-soft p-6">
                 <h2 class="text-base font-bold text-gray-700 mb-4">Choose Payment Method</h2>
-                <p class="text-xs text-gray-400 mb-5">You will be redirected to PayMongo to complete payment.</p>
+                <p class="text-xs text-gray-400 mb-5">You'll be redirected to PayMongo to complete your payment securely.</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     @php
                     $payMethods = [
@@ -83,7 +83,7 @@
                         <span class="font-semibold text-gray-800">₱{{ number_format($balance_tuition) }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-500">Convenience fee</span>
+                        <span class="text-gray-500">Payment processing fee</span>
                         <span class="font-semibold text-gray-800">₱{{ number_format($convenience_fee) }}</span>
                     </div>
                     <div class="border-t border-gray-100 pt-3 flex justify-between items-center">
@@ -91,10 +91,10 @@
                         <span class="font-extrabold text-brand-700 text-2xl">₱{{ number_format($total_due) }}</span>
                     </div>
                 </div>
-                <button type="submit" class="flex items-center justify-center gap-2 w-full px-5 py-3.5 bg-accent-500 text-brand-950 font-extrabold rounded-xl shadow-md hover:bg-accent-400 transition-all text-base">
-                    Pay balance — ₱{{ number_format($total_due) }}
+                <button type="submit" class="flex items-center justify-center gap-2 w-full px-5 py-3.5 bg-accent-500 text-white font-extrabold rounded-xl shadow-md hover:bg-accent-400 hover:text-white transition-all text-base">
+                    Pay remaining tuition
                 </button>
-                <p class="text-[10px] text-gray-400 text-center mt-3">Early-bird vs regular list price depends on whether you complete this checkout before the early-bird discount end date (not a final payment deadline).</p>
+                <p class="text-[10px] text-gray-400 text-center mt-3">Early-bird pricing applies if you complete this payment on or before the discount end date. After that date, the regular list price applies.</p>
             </div>
         </div>
     </form>

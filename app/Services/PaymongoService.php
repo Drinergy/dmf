@@ -211,6 +211,30 @@ class PaymongoService
         }
     }
 
+    /**
+     * Poll PayMongo for any pending checkout sessions tied to this enrollment so the
+     * local ledger can move to "paid" before the webhook arrives (success_url only passes ref).
+     *
+     * @author CKD
+     *
+     * @created 2026-04-21
+     */
+    public function syncPendingCheckoutSessionsForEnrollment(Enrollment $enrollment): void
+    {
+        $sessionIds = Payment::query()
+            ->where('enrollment_id', $enrollment->getKey())
+            ->where('status', 'pending')
+            ->whereNotNull('paymongo_checkout_session_id')
+            ->pluck('paymongo_checkout_session_id')
+            ->unique()
+            ->filter()
+            ->values();
+
+        foreach ($sessionIds as $checkoutSessionId) {
+            $this->syncCheckoutSessionStatus((string) $checkoutSessionId);
+        }
+    }
+
     public function handleWebhook(string $rawPayload, ?string $signatureHeader): array
     {
         $payload = json_decode($rawPayload, true);

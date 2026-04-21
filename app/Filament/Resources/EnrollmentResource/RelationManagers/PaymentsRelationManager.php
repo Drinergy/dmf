@@ -55,7 +55,9 @@ class PaymentsRelationManager extends RelationManager
                         'failed' => 'danger',
                         default => 'gray',
                     }),
-                Tables\Columns\TextColumn::make('paid_at')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('paid_at')
+                    ->dateTime(null, config('app.display_timezone'))
+                    ->sortable(),
             ])
             ->defaultSort('paid_at', 'desc')
             ->paginated(false);

@@ -10,13 +10,11 @@ use App\Services\EnrollmentFinancialService;
 use App\Services\EnrollmentPricingService;
 use App\Services\EnrollmentService;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class EnrollmentFinancialLedgerTest extends TestCase
 {
-    use RefreshDatabase;
-
     private function createProgram(array $overrides = []): Program
     {
         return Program::create(array_merge([
@@ -195,5 +193,86 @@ class EnrollmentFinancialLedgerTest extends TestCase
 
         $this->get(route('enroll.balance', ['reference_number' => $enrollment->reference_number]))
             ->assertForbidden();
+    }
+
+    public function test_unsigned_post_to_balance_pay_returns_403(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-01', 'Asia/Manila')->startOfDay());
+
+        $program = $this->createProgram(['slug' => 'bal-pay-unsigned']);
+        $enrollment = app(EnrollmentService::class)->createEnrollment(
+            $this->baseEnrollmentPayload($program, ['program' => 'bal-pay-unsigned'])
+        );
+
+        $this->post(
+            route('enroll.balance.pay', ['reference_number' => $enrollment->reference_number]),
+            ['payment_method' => 'gcash']
+        )->assertForbidden();
+
+        Carbon::setTestNow();
+    }
+
+    public function test_balance_pay_route_requires_valid_payment_method(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-01', 'Asia/Manila')->startOfDay());
+
+        $program = $this->createProgram(['slug' => 'bal-pay-method']);
+        $enrollment = app(EnrollmentService::class)->createEnrollment(
+            $this->baseEnrollmentPayload($program, ['program' => 'bal-pay-method'])
+        );
+
+        $signedUrl = URL::temporarySignedRoute(
+            'enroll.balance.pay',
+            now()->addMinutes(120),
+            ['reference_number' => $enrollment->reference_number],
+        );
+
+        $this->post($signedUrl, ['payment_method' => 'invalid_method'])
+            ->assertSessionHasErrors('payment_method');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_balance_becomes_zero_after_full_tuition_is_paid_via_two_payments(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-01', 'Asia/Manila')->startOfDay());
+
+        $program = $this->createProgram(['slug' => 'multi-pay']);
+        $enrollment = app(EnrollmentService::class)->createEnrollment(
+            $this->baseEnrollmentPayload($program, ['program' => 'multi-pay'])
+        );
+
+        // First payment: initial DP
+        Payment::query()->create([
+            'enrollment_id' => $enrollment->id,
+            'purpose' => Payment::PURPOSE_INITIAL,
+            'payment_method' => 'gcash',
+            'amount' => (5_000 + EnrollmentPricingService::CONVENIENCE_FEE_PESOS) * 100,
+            'currency' => 'PHP',
+            'tuition_amount' => 5_000,
+            'status' => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        // Second payment: balance (3 000 = early-bird 8 000 - DP 5 000)
+        Payment::query()->create([
+            'enrollment_id' => $enrollment->id,
+            'purpose' => Payment::PURPOSE_BALANCE,
+            'payment_method' => 'gcash',
+            'amount' => (3_000 + EnrollmentPricingService::CONVENIENCE_FEE_PESOS) * 100,
+            'currency' => 'PHP',
+            'tuition_amount' => 3_000,
+            'status' => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        app(EnrollmentFinancialService::class)->recalculateEnrollmentFinancials($enrollment->fresh());
+        $enrollment->refresh();
+
+        $this->assertSame(8_000, $enrollment->amount_paid_tuition);
+        $this->assertSame(0, $enrollment->balance_tuition_due);
+        $this->assertSame('confirmed', $enrollment->status);
+
+        Carbon::setTestNow();
     }
 }

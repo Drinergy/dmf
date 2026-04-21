@@ -154,6 +154,12 @@ class EnrollmentController extends Controller
                 ->with('error', 'Enrollment session not found. Please try again.');
         }
 
+        // success_url only includes ?ref=… — PayMongo may not have delivered the webhook yet,
+        // so the initial payment row can still be "pending". Sync checkout status before ledger math.
+        $this->paymongoService->syncPendingCheckoutSessionsForEnrollment($enrollment);
+        $enrollment->refresh();
+        $enrollment->load('payments');
+
         $this->enrollmentFinancialService->recalculateEnrollmentFinancials($enrollment);
         $enrollment->refresh();
         $enrollment->load('payments');
