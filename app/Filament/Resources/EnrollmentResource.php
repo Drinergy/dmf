@@ -19,6 +19,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Js;
+use Illuminate\Support\Str;
 
 class EnrollmentResource extends Resource
 {
@@ -69,9 +70,12 @@ class EnrollmentResource extends Resource
                                 ->icon('heroicon-o-phone')
                                 ->copyable()
                                 ->weight('semibold'),
-                            Infolists\Components\TextEntry::make('facebook')
+                            Infolists\Components\TextEntry::make('facebook_messenger_name')
+                                ->label('Facebook / Messenger Name')
                                 ->icon('heroicon-o-link')
-                                ->url(fn ($state) => $state)
+                                ->url(fn (Enrollment $record): ?string => Str::of((string) $record->facebook_messenger_url)->trim()->isNotEmpty()
+                                    ? (string) $record->facebook_messenger_url
+                                    : null)
                                 ->openUrlInNewTab()
                                 ->placeholder('—')
                                 ->columnSpanFull()

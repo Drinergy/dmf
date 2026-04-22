@@ -74,6 +74,9 @@ class EnrollmentService
             $discountLabel = 'Early bird';
         }
 
+        $facebookMessengerName = $data['facebook_messenger_name'] ?? $data['facebook'] ?? null;
+        $facebookMessengerUrl = $data['facebook_messenger_url'] ?? null;
+
         $enrollment = Enrollment::create([
             'reference_number' => Enrollment::generateReference(),
             'status' => 'pending',
@@ -86,7 +89,8 @@ class EnrollmentService
 
             'phone' => $data['phone'],
             'email' => $data['email'],
-            'facebook' => $data['facebook'] ?? null,
+            'facebook_messenger_name' => $facebookMessengerName,
+            'facebook_messenger_url' => $facebookMessengerUrl,
 
             'addr_street' => $data['addr_street'],
             'addr_city' => $data['addr_city'],
