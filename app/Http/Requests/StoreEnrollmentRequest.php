@@ -10,6 +10,17 @@ use Illuminate\Validation\Rule;
 
 class StoreEnrollmentRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $data = [];
+
+        if (! $this->filled('facebook_messenger_name') && $this->filled('facebook')) {
+            $data['facebook_messenger_name'] = $this->input('facebook');
+        }
+
+        $this->merge($data);
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -55,7 +66,8 @@ class StoreEnrollmentRequest extends FormRequest
             // Contact
             'phone' => 'required|string|max:20',
             'email' => 'required|email|max:255',
-            'facebook' => 'nullable|string|max:255',
+            'facebook_messenger_name' => 'required|string|max:255',
+            'facebook_messenger_url' => ['nullable', 'url', 'max:255'],
 
             // Address
             'addr_street' => 'required|string|max:255',

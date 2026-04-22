@@ -56,7 +56,8 @@ class EnrollmentScheduleValidationTest extends TestCase
 
             'phone' => '09171234567',
             'email' => 'juan@example.com',
-            'facebook' => 'Juan Dela Cruz',
+            'facebook_messenger_name' => 'Juan Dela Cruz',
+            'facebook_messenger_url' => null,
 
             'addr_street' => '123 Sample Street',
             'addr_city' => 'Manila',

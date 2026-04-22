@@ -100,7 +100,11 @@
                 </div>
                 <div class="sm:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Facebook / Messenger Name <span class="text-red-400">*</span></label>
-                    <input type="text" name="facebook" class="form-input" value="{{ old('facebook', $oldData['facebook'] ?? '') }}" placeholder="e.g. Juan Dela Cruz" required>
+                    <input type="text" name="facebook_messenger_name" class="form-input" value="{{ old('facebook_messenger_name', old('facebook', $oldData['facebook_messenger_name'] ?? ($oldData['facebook'] ?? ''))) }}" placeholder="e.g. Juan Dela Cruz" required>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Facebook / Messenger Link <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <input type="url" name="facebook_messenger_url" class="form-input" value="{{ old('facebook_messenger_url', $oldData['facebook_messenger_url'] ?? '') }}" placeholder="https://www.facebook.com/your.profile">
                 </div>
 
                 <div class="sm:col-span-2 mt-4 pt-4 border-t border-gray-100">

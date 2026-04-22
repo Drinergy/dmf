@@ -20,7 +20,8 @@ class Enrollment extends Model
         'first_name', 'middle_name', 'surname', 'birthday', 'sex',
 
         // Contact & address
-        'phone', 'email', 'facebook',
+        'phone', 'email',
+        'facebook_messenger_name', 'facebook_messenger_url',
         'addr_street', 'addr_city', 'addr_province', 'addr_zip',
         'deliv_street', 'deliv_city', 'deliv_province', 'deliv_zip',
 
@@ -73,6 +74,22 @@ class Enrollment extends Model
     public function getFullNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->middle_name} {$this->surname}");
+    }
+
+    /**
+     * Backward compatibility for legacy attribute access (`facebook`).
+     */
+    public function getFacebookAttribute(): ?string
+    {
+        return $this->facebook_messenger_name;
+    }
+
+    /**
+     * Backward compatibility for legacy attribute writes (`facebook`).
+     */
+    public function setFacebookAttribute(mixed $value): void
+    {
+        $this->attributes['facebook_messenger_name'] = $value === '' ? null : $value;
     }
 
     /**
