@@ -60,6 +60,91 @@ textarea:focus {
 /* Stat counter tabular nums */
 .stat-number { font-variant-numeric: tabular-nums; }
 
+/* ── Landing: scroll + hero motion (opt-in via html.land-scroll-anim) */
+@keyframes land-hero-fade {
+    from {
+        opacity: 0;
+        transform: translateY(1rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/**
+ * When JS is enabled, html gets class "land-scroll-anim" (see landing @section('head')).
+ * Without it, all land-* classes stay visible.
+ */
+html.land-scroll-anim .land-hero-1 { animation: land-hero-fade 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both; }
+html.land-scroll-anim .land-hero-2 { animation: land-hero-fade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+html.land-scroll-anim .land-hero-3 { animation: land-hero-fade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both; }
+html.land-scroll-anim .land-hero-4 { animation: land-hero-fade 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.26s both; }
+html.land-scroll-anim .land-hero-5 { animation: land-hero-fade 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both; }
+html.land-scroll-anim .land-hero-6 { animation: land-hero-fade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.14s both; }
+
+/* Scroll-triggered: single block */
+html.land-scroll-anim .land-reveal {
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+}
+html.land-scroll-anim .land-reveal.is-inview {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+}
+
+/* Stagger: direct children of grid or flex (cards, feature columns) */
+html.land-scroll-anim .land-stagger > * {
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+}
+html.land-scroll-anim .land-stagger.is-inview > *:nth-child(1)  { transition-delay: 0ms; }
+html.land-scroll-anim .land-stagger.is-inview > *:nth-child(2)  { transition-delay: 55ms; }
+html.land-scroll-anim .land-stagger.is-inview > *:nth-child(3)  { transition-delay: 110ms; }
+html.land-scroll-anim .land-stagger.is-inview > *:nth-child(4)  { transition-delay: 165ms; }
+html.land-scroll-anim .land-stagger.is-inview > *:nth-child(5)  { transition-delay: 220ms; }
+html.land-scroll-anim .land-stagger.is-inview > *:nth-child(6)  { transition-delay: 275ms; }
+html.land-scroll-anim .land-stagger.is-inview > *:nth-child(7)  { transition-delay: 330ms; }
+html.land-scroll-anim .land-stagger.is-inview > *:nth-child(8)  { transition-delay: 385ms; }
+html.land-scroll-anim .land-stagger.is-inview > * {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+}
+
+/* Success stories — guarantee readable author block (contrast) */
+#stories .testimonial-name {
+    color: #0f172a; /* slate-900 */
+}
+#stories .testimonial-year {
+    color: #475569; /* slate-600 */
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.land-scroll-anim .land-hero-1,
+    html.land-scroll-anim .land-hero-2,
+    html.land-scroll-anim .land-hero-3,
+    html.land-scroll-anim .land-hero-4,
+    html.land-scroll-anim .land-hero-5,
+    html.land-scroll-anim .land-hero-6 {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    html.land-scroll-anim .land-reveal,
+    html.land-scroll-anim .land-stagger > * {
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        will-change: auto;
+    }
+}
+
 
 /* =============================================================
    PAYMENT PAGE
