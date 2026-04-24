@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\ChecksCatalogPermissions;
 use App\Filament\Resources\ProgramResource\Pages;
 use App\Models\Category;
 use App\Models\Program;
@@ -15,9 +16,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ProgramResource extends Resource
 {
+    use ChecksCatalogPermissions;
+
     protected static ?string $model = Program::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+
+    protected static ?string $navigationGroup = 'Catalog';
 
     protected static ?string $navigationLabel = 'Programs';
 
@@ -25,9 +30,9 @@ class ProgramResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    public static function canViewAny(): bool
+    protected static function catalogResourceKey(): string
     {
-        return true;
+        return 'programs';
     }
 
     public static function form(Form $form): Form
@@ -132,7 +137,8 @@ class ProgramResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make()
+                    ->authorize(fn (): bool => static::currentUserCanCatalogAction('delete')),
             ]);
     }
 

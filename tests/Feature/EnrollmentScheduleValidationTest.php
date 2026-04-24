@@ -75,6 +75,7 @@ class EnrollmentScheduleValidationTest extends TestCase
             'taker_status' => 'First taker',
 
             'payment_type' => 'full',
+            'data_accuracy_ack' => '1',
         ], $overrides);
     }
 

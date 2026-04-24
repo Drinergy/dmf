@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\ChecksCatalogPermissions;
 use App\Filament\Resources\ScheduleResource\Pages;
 use App\Models\Program;
 use App\Models\Schedule;
@@ -14,9 +15,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ScheduleResource extends Resource
 {
+    use ChecksCatalogPermissions;
+
     protected static ?string $model = Schedule::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+
+    protected static ?string $navigationGroup = 'Catalog';
 
     protected static ?string $navigationLabel = 'Schedules';
 
@@ -24,9 +29,9 @@ class ScheduleResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    public static function canViewAny(): bool
+    protected static function catalogResourceKey(): string
     {
-        return true;
+        return 'schedules';
     }
 
     public static function form(Form $form): Form

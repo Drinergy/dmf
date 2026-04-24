@@ -33,13 +33,14 @@ class AdminPanelProvider extends PanelProvider
             ->login(CustomLogin::class)
             ->brandName('DMF Dental Training Center')
             ->brandLogo(fn () => view('filament.brand'))
+            ->brandLogoHeight('auto')
             ->favicon(asset('favicon.ico'))
             ->assets([
-                Css::make('dmf-filament-admin', public_path('css/filament-admin.css'))
+                Css::make('dmf-admin', public_path('css/dmf-admin.css'))
                     ->package('app'),
             ])
-            ->navigation(false)
-            ->topNavigation()
+            ->sidebarCollapsibleOnDesktop()
+            ->collapsibleNavigationGroups(false)
             ->maxContentWidth('6xl')
             ->colors([
                 // Primary = brand gold (accent color of the main site)

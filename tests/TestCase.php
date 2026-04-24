@@ -2,14 +2,14 @@
 
 namespace Tests;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
     /**
-     * Roll back each test in a transaction instead of migrate:fresh (RefreshDatabase),
-     * so running the suite never drops or wipes your PostgreSQL data.
+     * phpunit.xml points tests at SQLite :memory:. Migrations run once per process;
+     * each test is wrapped so data does not leak between tests.
      */
-    use DatabaseTransactions;
+    use RefreshDatabase;
 }

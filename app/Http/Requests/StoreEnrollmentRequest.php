@@ -100,6 +100,8 @@ class StoreEnrollmentRequest extends FormRequest
             ],
             'schedule_id' => $scheduleRules,
             'payment_type' => 'required|in:full,downpayment',
+
+            'data_accuracy_ack' => 'required|accepted',
         ];
     }
 }

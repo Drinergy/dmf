@@ -6,10 +6,13 @@ namespace App\Filament\Resources\EnrollmentResource\Pages;
 
 use App\Filament\Resources\EnrollmentResource;
 use App\Models\Enrollment;
+use App\Models\User;
 use App\Services\EnrollmentFinancialService;
+use App\Support\PermissionCodes;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Js;
 
@@ -62,7 +65,7 @@ class ViewEnrollment extends ViewRecord
         $actions = [];
 
         $payBalanceUrl = $this->resolvePayBalanceSignedUrl();
-        if ($payBalanceUrl !== null) {
+        if ($payBalanceUrl !== null && $this->viewerMayCopyPayBalanceLink()) {
             $actions[] = Actions\Action::make('copyPayBalanceLink')
                 ->label('Copy payment link')
                 ->icon('heroicon-m-clipboard-document')
@@ -101,5 +104,21 @@ class ViewEnrollment extends ViewRecord
             now()->addYears(5),
             ['reference_number' => $record->reference_number],
         );
+    }
+
+    private function viewerMayCopyPayBalanceLink(): bool
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->hasPermission(PermissionCodes::ENROLLMENT_ACTION_COPY_PAY_BALANCE_LINK);
     }
 }

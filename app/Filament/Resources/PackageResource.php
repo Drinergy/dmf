@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\ChecksCatalogPermissions;
 use App\Filament\Resources\PackageResource\Pages;
 use App\Models\Category;
 use App\Models\Package;
@@ -15,13 +16,22 @@ use Filament\Tables\Table;
 
 class PackageResource extends Resource
 {
+    use ChecksCatalogPermissions;
+
     protected static ?string $model = Package::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationGroup = 'Catalog';
+
     protected static ?string $navigationLabel = 'Packages';
 
     protected static ?int $navigationSort = 15;
+
+    protected static function catalogResourceKey(): string
+    {
+        return 'packages';
+    }
 
     public static function form(Form $form): Form
     {
@@ -118,7 +128,8 @@ class PackageResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->authorize(fn (): bool => static::currentUserCanCatalogAction('delete')),
                 ]),
             ]);
     }

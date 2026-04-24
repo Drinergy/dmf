@@ -62,6 +62,8 @@ class EnrollmentMessengerUrlValidationTest extends TestCase
             'year_level' => 'Graduate',
             'year_graduated' => '2024',
             'taker_status' => 'First taker',
+
+            'data_accuracy_ack' => '1',
         ], $overrides);
     }
 
