@@ -96,7 +96,11 @@
                 </a>
                 <a href="{{ url('/#about') }}"    
                    class="nav-link transition-colors duration-150 text-gray-500 hover:text-brand-600">
-                   About
+                   Why DMF
+                </a>
+                <a href="{{ url('/#stories') }}"    
+                   class="nav-link transition-colors duration-150 text-gray-500 hover:text-brand-600">
+                   Stories
                 </a>
                 <a href="{{ url('/enroll') }}" 
                    class="ml-2 px-4 py-2 rounded-xl text-sm font-bold transition-colors duration-200 shadow-sm {{ request()->is('enroll*') ? 'bg-accent-500 text-brand-950 hover:bg-accent-400' : 'bg-brand-600 text-white hover:bg-brand-700' }}">
