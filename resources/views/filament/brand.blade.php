@@ -10,7 +10,7 @@
         z-index: 50 !important;
     }
 
-    .fi-topbar > nav {
+    .fi-topbar>nav {
         background: transparent !important;
         box-shadow: none !important;
         border: none !important;
@@ -20,7 +20,7 @@
     }
 
     /* Filament hides logo wrapper below lg; keep visible (same block as landing on mobile) */
-    .fi-topbar nav > div.me-6.hidden {
+    .fi-topbar nav>div.me-6.hidden {
         display: flex !important;
         align-items: center;
         flex-shrink: 0;
@@ -70,11 +70,13 @@
         width: 3rem !important;
         height: 3rem !important;
     }
+
     main.fi-simple-main .brand-title-wrapper {
         font-size: 1.125rem !important;
         line-height: 1.25 !important;
         top: 0.125rem !important;
     }
+
     main.fi-simple-main .brand-tagline {
         font-size: 10px !important;
         margin-top: 0.125rem !important;
@@ -95,11 +97,13 @@
         position: relative;
         overflow: hidden;
     }
+
     main.fi-simple-main form button[type="submit"]:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 6px 20px rgba(244, 148, 12, 0.45) !important;
         background: linear-gradient(135deg, #fba11b 0%, #f08d00 100%) !important;
     }
+
     main.fi-simple-main form button[type="submit"]::after {
         content: '';
         position: absolute;
@@ -110,6 +114,7 @@
         background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
         transition: all 0.5s ease;
     }
+
     main.fi-simple-main form button[type="submit"]:hover::after {
         left: 100%;
     }

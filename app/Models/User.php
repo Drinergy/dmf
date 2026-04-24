@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -12,10 +14,19 @@ class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable;
 
+    /**
+     * In-request cache of permission codes for assistants (avoids hundreds of
+     * exists() queries on Filament tables — admins skip DB entirely in hasPermission).
+     *
+     * @var list<string>|null
+     */
+    private ?array $assistantPermissionCodesCache = null;
+
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
     ];
 
     protected $hidden = [
@@ -28,11 +39,120 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
         ];
     }
 
+    /**
+     * Determines if the user may access the Filament admin panel.
+     *
+     * Only users with an explicit admin or assistant role may enter. The admin
+     * email is hard-guarded as a fallback so a mis-seeded role never locks out
+     * the primary owner.
+     *
+     * @author CKD
+     *
+     * @created 2026-04-24
+     */
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        if ($this->email === 'admin@dmfdental.com') {
+            return true;
+        }
+
+        // Use tryFrom against the raw DB string so an unrecognised role value
+        // never throws a ValueError — it simply returns null (access denied).
+        $role = UserRole::tryFrom($this->getRawOriginal('role') ?? '');
+
+        return $role === UserRole::Admin || $role === UserRole::Assistant;
+    }
+
+    /**
+     * Returns true when this user is the primary administrator.
+     *
+     * @author CKD
+     *
+     * @created 2026-04-24
+     */
+    public function isAdmin(): bool
+    {
+        return $this->email === 'admin@dmfdental.com' || $this->role === UserRole::Admin;
+    }
+
+    /**
+     * Returns true when this user holds the assistant role.
+     *
+     * @author CKD
+     *
+     * @created 2026-04-24
+     */
+    public function isAssistant(): bool
+    {
+        return $this->role === UserRole::Assistant && ! $this->isAdmin();
+    }
+
+    /**
+     * Permissions explicitly granted to this user (assistants). Admins implicitly have all access.
+     *
+     * @return BelongsToMany<Permission, $this>
+     */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class)->withTimestamps();
+    }
+
+    /**
+     * Whether this user holds a given permission code. Admins always return true.
+     *
+     * @author CKD
+     *
+     * @created 2026-04-25
+     */
+    public function hasPermission(string $code): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        if (! $this->isAssistant()) {
+            return false;
+        }
+
+        if ($this->assistantPermissionCodesCache === null) {
+            $this->assistantPermissionCodesCache = $this->permissions()->pluck('code')->all();
+        }
+
+        return in_array($code, $this->assistantPermissionCodesCache, true);
+    }
+
+    /**
+     * Replace assigned permissions using human-readable codes.
+     *
+     * @param  list<string>  $codes
+     *
+     * @author CKD
+     *
+     * @created 2026-04-25
+     */
+    public function syncPermissionsByCode(array $codes): void
+    {
+        $codes = array_values(array_unique(array_filter($codes)));
+
+        if ($codes === []) {
+            $this->permissions()->sync([]);
+            $this->flushAssistantPermissionCodesCache();
+
+            return;
+        }
+
+        $ids = Permission::query()->whereIn('code', $codes)->pluck('id');
+
+        $this->permissions()->sync($ids->all());
+        $this->flushAssistantPermissionCodesCache();
+    }
+
+    private function flushAssistantPermissionCodesCache(): void
+    {
+        $this->assistantPermissionCodesCache = null;
     }
 }

@@ -1,3 +1,10 @@
+/* =============================================================
+   DMF Dental Admin — Custom Filament overrides
+   Source file: public/css/filament-admin.css
+   Published to: public/css/app/dmf-filament-admin.css
+   ============================================================= */
+
+/* ---- Table toolbar ---- */
 .fi-ta-header-toolbar {
     gap: 0.5rem;
 }
@@ -39,3 +46,205 @@
     flex-shrink: 0;
 }
 
+/* =============================================================
+   ADMIN SIDEBAR — DMF brand navy (matches footer #263255)
+   Selectors verified against Filament v3 Blade templates.
+   ============================================================= */
+
+/* ---- Layout fix: fill full viewport height so body bg never bleeds ---- */
+.fi-layout {
+    min-height: 100vh !important;
+}
+
+/* ---- Layout fix: make main content column a flex container ----
+   fi-main-ctn has flex-col but NOT flex when using sidebar nav,
+   so the footer never pushes to the bottom of the viewport.       */
+.fi-main-ctn {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* fi-main has Tailwind h-full (height:100%). With flex:1 1 auto the flex-basis
+   resolves to 100% of the container, making fi-main try to be 100vh on its own —
+   the footer then goes below 100vh and body background bleeds through.
+   height:auto resets the basis to content size; flex:1 then fills remaining space
+   (100vh minus topbar minus footer height) correctly.                             */
+.fi-main {
+    flex: 1 !important;
+    height: auto !important;
+    min-height: 0 !important;
+}
+
+/* ---- Topbar (mobile hamburger bar) ---- */
+.fi-topbar nav {
+    background-color: #263255 !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+.fi-topbar-open-sidebar-btn,
+.fi-topbar-close-sidebar-btn {
+    color: rgba(255,255,255,0.7) !important;
+}
+
+/* ---- Sidebar shell ---- */
+.fi-sidebar,
+aside.fi-sidebar {
+    background-color: #263255 !important;
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+/* ---- Sidebar header (brand area) ---- */
+.fi-sidebar-header {
+    background-color: #263255 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    box-shadow: none !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+    height: auto !important;
+    min-height: 4rem !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+}
+
+/* The brand wrapper <div> has no flex-grow by default, so it floats at natural
+   width. Give it flex:1 so it fills the space between left edge and the
+   collapse button, giving the brand-container the full available width.        */
+.fi-sidebar-header > div {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+/* .fi-logo gets style="height:1.5rem" inline from Filament — we override
+   via brandLogoHeight('auto') in AdminPanelProvider, but this is a safety net. */
+.fi-sidebar-header .fi-logo {
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Brand container text colors for the dark sidebar */
+.fi-sidebar-header .brand-container {
+    min-width: 0;
+    max-width: 100%;
+    gap: 0.625rem !important;
+}
+.fi-sidebar-header .brand-logo {
+    flex-shrink: 0 !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+}
+.fi-sidebar-header .brand-title-wrapper {
+    color: #ffffff !important;
+    font-size: 1rem !important;
+    top: 0 !important;
+    position: static !important;
+}
+.fi-sidebar-header .brand-tagline {
+    color: #FAB21B !important;
+}
+
+/* ---- Scrollable nav area ---- */
+.fi-sidebar-nav {
+    background-color: #263255 !important;
+    padding-top: 0.75rem !important;
+}
+
+/* ---- Nav group labels (e.g., "ENROLLMENTS", "CATALOG") ----
+   Template class: fi-sidebar-group-label (text-gray-500)          */
+.fi-sidebar-group-label {
+    color: rgba(255,255,255,0.45) !important;
+    font-size: 0.6875rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+}
+
+/* ---- Group collapse/expand button div ----
+   Template class: fi-sidebar-group-button                         */
+.fi-sidebar-group-button {
+    border-radius: 0.5rem;
+}
+.fi-sidebar-group-button:hover {
+    background-color: rgba(255,255,255,0.06) !important;
+}
+/* Collapse chevron icon button — fi-sidebar-group-collapse-button */
+.fi-sidebar-group-collapse-button,
+.fi-sidebar-group-collapse-button svg {
+    color: rgba(255,255,255,0.4) !important;
+}
+
+/* ---- Nav item — label text ----
+   Template class: fi-sidebar-item-label (text-gray-700 = dark!)   */
+.fi-sidebar-item-label {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+/* ---- Nav item — icon ----
+   Template class: fi-sidebar-item-icon (text-gray-400)            */
+.fi-sidebar-item-icon {
+    color: rgba(255,255,255,0.5) !important;
+}
+
+/* ---- Nav item — hover state ---- */
+.fi-sidebar-item-button:hover {
+    background-color: rgba(255,255,255,0.08) !important;
+}
+.fi-sidebar-item-button:hover .fi-sidebar-item-label {
+    color: #fff !important;
+}
+.fi-sidebar-item-button:hover .fi-sidebar-item-icon {
+    color: rgba(255,255,255,0.85) !important;
+}
+
+/* ---- Nav item — ACTIVE state ----
+   NOTE: fi-active is on the <li class="fi-sidebar-item">,
+   NOT on the <a class="fi-sidebar-item-button">. The active <a>
+   has Tailwind bg-gray-100 which shows as light on dark sidebar.  */
+.fi-sidebar-item.fi-active .fi-sidebar-item-button {
+    background-color: rgba(250,178,27,0.15) !important;
+}
+.fi-sidebar-item.fi-active .fi-sidebar-item-label {
+    color: #FAB21B !important;
+}
+.fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+    color: #FAB21B !important;
+}
+
+/* ---- Sidebar header icon buttons (collapse ← chevron) ---- */
+.fi-sidebar-header .fi-icon-btn {
+    color: rgba(255,255,255,0.5) !important;
+}
+.fi-sidebar-header .fi-icon-btn:hover {
+    background-color: rgba(255,255,255,0.08) !important;
+    color: rgba(255,255,255,0.85) !important;
+}
+
+/* ---- Sidebar footer (account widget strip) ---- */
+.fi-sidebar-footer {
+    background-color: #1e2942 !important;
+    border-top: 1px solid rgba(255,255,255,0.07) !important;
+}
+/* Account widget: user name and email */
+.fi-sidebar-footer .fi-account-widget-name,
+.fi-sidebar-footer [class*="font-medium"],
+.fi-sidebar-footer [class*="text-sm"] {
+    color: rgba(255,255,255,0.85) !important;
+}
+.fi-sidebar-footer [class*="text-xs"],
+.fi-sidebar-footer [class*="truncate"]:not([class*="font-medium"]) {
+    color: rgba(255,255,255,0.5) !important;
+}
+/* Logout / profile button in footer */
+.fi-sidebar-footer .fi-icon-btn,
+.fi-sidebar-footer button {
+    color: rgba(255,255,255,0.55) !important;
+}
+.fi-sidebar-footer .fi-icon-btn:hover,
+.fi-sidebar-footer button:hover {
+    background-color: rgba(255,255,255,0.08) !important;
+    color: rgba(255,255,255,0.9) !important;
+}
+
+/* ---- Mobile close overlay ---- */
+.fi-sidebar-close-overlay {
+    background-color: rgba(0,0,0,0.6) !important;
+}

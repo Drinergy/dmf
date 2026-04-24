@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             PackageSeeder::class,
             ScheduleSeeder::class,
             AdminUserSeeder::class,
+            PermissionSeeder::class,
         ]);
     }
 }

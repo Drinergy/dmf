@@ -8,6 +8,8 @@ use App\Filament\Resources\EnrollmentResource\RelationManagers;
 use App\Models\Enrollment;
 use App\Models\Package;
 use App\Models\Program;
+use App\Models\User;
+use App\Support\PermissionCodes;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
@@ -17,6 +19,8 @@ use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Js;
 use Illuminate\Support\Str;
@@ -27,15 +31,78 @@ class EnrollmentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
-    protected static ?string $navigationLabel = 'Enrollments';
+    protected static ?string $navigationGroup = 'Enrollment';
+
+    protected static ?string $navigationLabel = 'Enrollment';
 
     protected static ?int $navigationSort = 1;
 
-    // Hides the resource from the navigation menu
-    protected static bool $shouldRegisterNavigation = false;
+    /**
+     * Whether the current user may see a granular enrollment permission (admins always may).
+     *
+     * @author CKD
+     *
+     * @created 2026-04-25
+     */
+    private static function viewerCan(string $permissionCode): bool
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
 
-    // Disable create button
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->hasPermission($permissionCode);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return Auth::check();
+    }
+
+    public static function canView(Model $record): bool
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        if (! $user->isAssistant()) {
+            return false;
+        }
+
+        foreach (PermissionCodes::enrollmentRecordViewPermissionCodes() as $code) {
+            if ($user->hasPermission($code)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Disable create / edit / delete for all roles — enrollments come from the public form.
     public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
     {
         return false;
     }
@@ -48,6 +115,7 @@ class EnrollmentResource extends Resource
                     Infolists\Components\Section::make('Applicant Profile')
                         ->description('Personal information and contact details.')
                         ->icon('heroicon-o-user')
+                        ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_APPLICANT_PROFILE))
                         ->schema([
                             Infolists\Components\TextEntry::make('full_name')
                                 ->label('Full Name')
@@ -87,6 +155,7 @@ class EnrollmentResource extends Resource
                     Infolists\Components\Section::make('Academic Background')
                         ->description('School and board exam/taker information.')
                         ->icon('heroicon-o-academic-cap')
+                        ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_ACADEMIC))
                         ->schema([
                             Infolists\Components\TextEntry::make('school')
                                 ->size(Infolists\Components\TextEntry\TextEntrySize::Large)
@@ -103,6 +172,7 @@ class EnrollmentResource extends Resource
                     Infolists\Components\Section::make('Home Address')
                         ->description('Primary address details for records and communications.')
                         ->icon('heroicon-o-map-pin')
+                        ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_HOME_ADDRESS))
                         ->schema([
                             Infolists\Components\TextEntry::make('addr_street')->label('Street')->columnSpanFull()->weight('semibold'),
                             Infolists\Components\TextEntry::make('addr_city')->label('City')->weight('semibold'),
@@ -115,21 +185,26 @@ class EnrollmentResource extends Resource
                     Infolists\Components\Section::make('Plan & checkout')
                         ->description('Purchased item, chosen plan, and first checkout summary.')
                         ->icon('heroicon-o-credit-card')
+                        ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_PLAN_CHECKOUT)
+                            || static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_PLAN_FINANCIAL))
                         ->schema([
                             Infolists\Components\TextEntry::make('status')
                                 ->badge()
                                 ->color(fn ($state): string|array => EnrollmentStatus::tryFromMixed($state)?->filamentColor() ?? 'gray')
                                 ->formatStateUsing(fn ($state): string => EnrollmentStatus::tryFromMixed($state)?->label() ?? strtoupper((string) $state))
-                                ->columnSpanFull(),
+                                ->columnSpanFull()
+                                ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_PLAN_CHECKOUT)),
                             Infolists\Components\TextEntry::make('reference_number')
                                 ->label('Reference #')
                                 ->fontFamily('mono')
                                 ->copyable()
-                                ->weight('bold'),
+                                ->weight('bold')
+                                ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_PLAN_CHECKOUT)),
                             Infolists\Components\TextEntry::make('purchasable_name_snapshot')
                                 ->label('Purchased item')
                                 ->weight('bold')
-                                ->color('primary'),
+                                ->color('primary')
+                                ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_PLAN_CHECKOUT)),
                             Infolists\Components\TextEntry::make('batch_label')
                                 ->label('Batch (first item)')
                                 ->getStateUsing(function (Enrollment $record): ?string {
@@ -138,22 +213,26 @@ class EnrollmentResource extends Resource
                                     return $item?->schedule?->label;
                                 })
                                 ->placeholder('—')
-                                ->weight('semibold'),
+                                ->weight('semibold')
+                                ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_PLAN_CHECKOUT)),
                             Infolists\Components\TextEntry::make('payment_type')
                                 ->label('Plan')
                                 ->formatStateUsing(fn ($state) => $state === 'full' ? 'Full' : 'Downpayment')
                                 ->badge()
-                                ->color('gray'),
+                                ->color('gray')
+                                ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_PLAN_CHECKOUT)),
                             Infolists\Components\TextEntry::make('base_amount')
                                 ->label(fn (Enrollment $record): string => match ($record->payment_type) {
                                     'downpayment' => 'Downpayment (excl. convenience fee)',
                                     'full' => 'Program charge (excl. convenience fee)',
                                     default => 'Checkout amount (excl. convenience fee)',
                                 })
-                                ->money('PHP'),
+                                ->money('PHP')
+                                ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_PLAN_FINANCIAL)),
                             Infolists\Components\TextEntry::make('convenience_fee')
                                 ->label('Convenience fee')
-                                ->money('PHP'),
+                                ->money('PHP')
+                                ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_PLAN_FINANCIAL)),
                             Infolists\Components\TextEntry::make('total_amount')
                                 ->label('First payment')
                                 ->hintIcon(
@@ -164,17 +243,20 @@ class EnrollmentResource extends Resource
                                 ->money('PHP')
                                 ->weight('bold')
                                 ->color('primary')
-                                ->columnSpanFull(),
+                                ->columnSpanFull()
+                                ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_PLAN_FINANCIAL)),
                             Infolists\Components\TextEntry::make('created_at')
                                 ->label('Submitted')
                                 ->dateTime('M j, Y g:i A', config('app.display_timezone'))
                                 ->icon('heroicon-o-clock')
-                                ->columnSpanFull(),
+                                ->columnSpanFull()
+                                ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_PLAN_CHECKOUT)),
                         ])->columns(['default' => 1, 'md' => 3]),
 
                     Infolists\Components\Section::make('Tuition & balance')
                         ->description('Tuition pricing snapshots, paid amount, and remaining balance.')
                         ->icon('heroicon-o-calculator')
+                        ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_DETAIL_TUITION_BALANCE))
                         ->schema([
                             Infolists\Components\TextEntry::make('tuition_list_amount')
                                 ->label('Regular list price')
@@ -273,7 +355,8 @@ class EnrollmentResource extends Resource
                     ->money('PHP')
                     ->sortable()
                     ->alignment(Alignment::Start)
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->visible(fn (): bool => static::viewerCan(PermissionCodes::ENROLLMENT_LIST_FIRST_PAYMENT)),
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
@@ -378,7 +461,8 @@ class EnrollmentResource extends Resource
                     ->iconButton()
                     ->color('warning')
                     ->tooltip('Copy payment link for student to pay remaining tuition')
-                    ->visible(fn (Enrollment $record): bool => $record->payment_type === 'downpayment'
+                    ->visible(fn (Enrollment $record): bool => static::viewerCan(PermissionCodes::ENROLLMENT_ACTION_COPY_PAY_BALANCE_LINK)
+                        && $record->payment_type === 'downpayment'
                         && (int) $record->amount_paid_tuition > 0
                         && $record->computed_balance_tuition_due > 0)
                     ->action(function (Enrollment $record, $livewire): void {

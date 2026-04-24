@@ -4,16 +4,33 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\EnrollmentResource\RelationManagers;
 
+use App\Support\PermissionCodes;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'payments';
 
     protected static ?string $title = 'Payments';
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->hasPermission(PermissionCodes::ENROLLMENT_RELATION_PAYMENTS);
+    }
 
     public static function canCreateForRecord(Model $ownerRecord, string $pageClass): bool
     {

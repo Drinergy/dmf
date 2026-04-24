@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\ChecksCatalogPermissions;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
 use Filament\Forms;
@@ -12,9 +13,13 @@ use Filament\Tables\Table;
 
 class CategoryResource extends Resource
 {
+    use ChecksCatalogPermissions;
+
     protected static ?string $model = Category::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
+
+    protected static ?string $navigationGroup = 'Catalog';
 
     protected static ?string $navigationLabel = 'Categories';
 
@@ -22,9 +27,9 @@ class CategoryResource extends Resource
 
     protected static bool $shouldRegisterNavigation = true;
 
-    public static function canViewAny(): bool
+    protected static function catalogResourceKey(): string
     {
-        return true;
+        return 'categories';
     }
 
     public static function form(Form $form): Form
@@ -75,7 +80,8 @@ class CategoryResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make()
+                    ->authorize(fn (): bool => static::currentUserCanCatalogAction('delete')),
             ]);
     }
 

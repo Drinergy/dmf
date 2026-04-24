@@ -48,6 +48,17 @@
     <form id="enrollment-form" action="{{ route('enroll.store') }}" method="POST">
         @csrf
 
+        @if ($errors->any())
+            <div class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 scroll-mt-24" role="alert" id="enrollment-form-errors" tabindex="-1">
+                <p class="font-bold text-sm mb-2">Please fix the following:</p>
+                <ul class="list-disc list-inside text-sm space-y-1">
+                    @foreach ($errors->all() as $message)
+                        <li>{{ $message }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         {{-- 1. Personal Info --}}
         <div class="bg-white rounded-2xl border border-gray-100 shadow-soft p-6 md:p-8 mb-6">
             <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
@@ -196,6 +207,11 @@
             @error('program')
                 <p class="mb-4 text-xs text-red-600">{{ $message }}</p>
             @enderror
+
+            @php
+                /** Only one radio in the group may use HTML5 `required` — duplicate required breaks some browsers. */
+                $programRadioNeedsRequired = true;
+            @endphp
             
             <div class="space-y-8">
                 @if(isset($packages) && $packages->count() > 0)
@@ -208,11 +224,16 @@
                             $activeFullPrice = $isEarlyBirdActive ? $pkg->price_early : $pkg->price_full;
                         @endphp
                         <label class="program-opt relative flex flex-col h-full rounded-xl border-2 border-gray-100 p-4 bg-white" for="prog-{{ $pkg->slug }}">
-                            <input type="radio" id="prog-{{ $pkg->slug }}" name="program" value="{{ $pkg->slug }}" class="sr-only" required
+                            <input type="radio" id="prog-{{ $pkg->slug }}" name="program" value="{{ $pkg->slug }}" class="sr-only" @if ($programRadioNeedsRequired) required @endif
                                    data-kind="package"
                                    data-full="{{ $activeFullPrice }}" data-dp="{{ $pkg->downpayment_amount }}"
                                    data-schedules='[]'
                                    {{ old('program', $oldData['program'] ?? (request('program') === $pkg->slug ? $pkg->slug : '')) === $pkg->slug ? 'checked' : '' }}>
+                            @if ($programRadioNeedsRequired)
+                                @php
+                                    $programRadioNeedsRequired = false;
+                                @endphp
+                            @endif
 
                             <p class="font-bold text-brand-900 text-sm mb-2 leading-tight pr-4">{{ $pkg->name }}</p>
 
@@ -262,12 +283,17 @@
                             $activeFullPrice = $isEarlyBirdActive ? $prog->price_early : $prog->price_full;
                         @endphp
                         <label class="program-opt relative flex flex-col h-full rounded-xl border-2 border-gray-100 p-4 bg-white" for="prog-{{ $prog->slug }}">
-                            <input type="radio" id="prog-{{ $prog->slug }}" name="program" value="{{ $prog->slug }}" class="sr-only" required
+                            <input type="radio" id="prog-{{ $prog->slug }}" name="program" value="{{ $prog->slug }}" class="sr-only" @if ($programRadioNeedsRequired) required @endif
                                    data-kind="program"
                                    data-full="{{ $activeFullPrice }}" data-dp="{{ $prog->downpayment_amount }}"
                                    data-schedules='@json($prog->schedules->map(fn($s) => ["id" => $s->id, "label" => $s->label, "mode" => $s->mode]))'
                                    {{ old('program', $oldData['program'] ?? (request('program') === $prog->slug ? $prog->slug : '')) === $prog->slug ? 'checked' : '' }}>
-                            
+                            @if ($programRadioNeedsRequired)
+                                @php
+                                    $programRadioNeedsRequired = false;
+                                @endphp
+                            @endif
+
                             <p class="font-bold text-brand-900 text-sm mb-2 leading-tight pr-4">{{ $prog->name }}</p>
 
                             {{-- Batch summary (from schedules) --}}
@@ -372,7 +398,7 @@
                 </label>
                 
                 <label class="pay-type-opt relative flex flex-col items-center justify-center rounded-xl border-2 border-gray-100 p-5 bg-white text-center" for="pay-dp">
-                    <input type="radio" id="pay-dp" name="payment_type" value="downpayment" class="sr-only" required
+                    <input type="radio" id="pay-dp" name="payment_type" value="downpayment" class="sr-only"
                            {{ old('payment_type', $oldData['payment_type'] ?? '') === 'downpayment' ? 'checked' : '' }}>
                     <p class="font-bold text-gray-800 mb-1">Downpayment</p>
                     <p class="text-2xl font-extrabold text-brand-600" id="lbl-dp-price">₱0</p>
@@ -381,8 +407,12 @@
         </div>
 
         <div class="space-y-4">
+            @error('data_accuracy_ack')
+                <p class="text-xs text-red-600">{{ $message }}</p>
+            @enderror
             <label class="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" required class="mt-0.5 w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500">
+                <input type="checkbox" name="data_accuracy_ack" value="1" class="mt-0.5 w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500" required
+                    {{ old('data_accuracy_ack', $oldData['data_accuracy_ack'] ?? '') ? 'checked' : '' }}>
                 <span class="text-sm text-gray-500">I agree that all information provided is true and correct to the best of my knowledge.</span>
             </label>
 
@@ -396,4 +426,9 @@
 
 @section('scripts')
 <script src="{{ asset('js/enrollment-form.js') }}"></script>
+@if ($errors->any())
+    <script>
+        document.getElementById('enrollment-form-errors')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    </script>
+@endif
 @endsection
