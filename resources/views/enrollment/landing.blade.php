@@ -15,6 +15,7 @@
     {{-- Decorative blobs --}}
     <div class="absolute -top-24 -right-24 w-96 h-96 bg-brand-600/20 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute -bottom-16 -left-16 w-72 h-72 bg-accent-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute inset-0 opacity-[0.06] bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:18px_18px] pointer-events-none"></div>
 
     <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 lg:py-36">
         <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
@@ -78,16 +79,26 @@
 
                     @php
                     $stats = [
-                        ['value' => '94%',  'label' => 'National Passing Rate', 'icon' => '🏆'],
-                        ['value' => '15+',  'label' => 'Years of Excellence',    'icon' => '📅'],
-                        ['value' => '50+',  'label' => 'Expert Instructors',     'icon' => '👨‍⚕️'],
-                        ['value' => '100%', 'label' => 'Satisfaction Guarantee', 'icon' => '✅'],
+                        ['value' => '94%',  'label' => 'National Passing Rate', 'tone' => 'bg-accent-50 text-accent-700', 'icon' => 'trophy'],
+                        ['value' => '15+',  'label' => 'Years of Excellence',   'tone' => 'bg-brand-50 text-brand-700', 'icon' => 'calendar'],
+                        ['value' => '50+',  'label' => 'Expert Instructors',    'tone' => 'bg-emerald-50 text-emerald-700', 'icon' => 'user'],
+                        ['value' => '100%', 'label' => 'Satisfaction Guarantee','tone' => 'bg-brand-50 text-brand-700', 'icon' => 'check'],
                     ];
                     @endphp
 
                     @foreach($stats as $stat)
                     <div class="flex items-center gap-4">
-                        <span class="text-2xl">{{ $stat['icon'] }}</span>
+                        <span class="w-10 h-10 rounded-2xl {{ $stat['tone'] }} flex items-center justify-center shadow-sm">
+                            @if($stat['icon'] === 'trophy')
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8M12 17v4M7 4h10v3a5 5 0 0 1-10 0V4Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 7a3 3 0 0 0 3 3M19 7a3 3 0 0 1-3 3"/></svg>
+                            @elseif($stat['icon'] === 'calendar')
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 2v3M16 2v3M3 8h18M5 5h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/></svg>
+                            @elseif($stat['icon'] === 'user')
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 21a8 8 0 0 1 16 0"/></svg>
+                            @else
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            @endif
+                        </span>
                         <div>
                             <p class="text-2xl font-extrabold text-brand-600 stat-number leading-none">{{ $stat['value'] }}</p>
                             <p class="text-xs text-gray-500 mt-0.5">{{ $stat['label'] }}</p>
@@ -110,11 +121,61 @@
 <section id="programs" class="scroll-mt-20 py-16 md:py-24 bg-gray-50">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
+        {{-- Program descriptions (separate section) --}}
+        <div class="mb-12">
+            <div class="text-center mb-6">
+                <span class="text-brand-600 text-xs font-semibold uppercase tracking-widest">Program Overview</span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mt-2 tracking-tight">What these programs cover</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="rounded-2xl border border-gray-100 shadow-soft bg-white p-6">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3v1.5a3 3 0 0 1-3 3h-7.5a3 3 0 0 1-3-3v-1.5a3 3 0 0 1 3-3h7.5Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 13.5v3a3 3 0 0 0 3 3h3a3 3 0 0 0 3-3v-3" />
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-extrabold text-gray-900 mb-2">Hybrid Face-to-Face Intensive Lecture Review</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        A structured lecture series with high-yield discussions, drills, and guidance—combining in-person sessions with online support to strengthen foundations and exam readiness.
+                    </p>
+                </div>
+
+                <div class="rounded-2xl border border-gray-100 shadow-soft bg-white p-6">
+                    <div class="w-12 h-12 rounded-2xl bg-accent-50 text-accent-700 flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h7.5M8.25 10.5h7.5M8.25 14.25h4.5" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3.75h10.5A2.25 2.25 0 0 1 19.5 6v12a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 18V6a2.25 2.25 0 0 1 2.25-2.25Z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-extrabold text-gray-900 mb-2">Online Final Coaching</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        Final stretch coaching with guided recalls, test-taking strategies, and focused Q&amp;A. Best for sharpening confidence and timing right before the boards.
+                    </p>
+                </div>
+
+                <div class="rounded-2xl border border-gray-100 shadow-soft bg-white p-6">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21V7.5a2.25 2.25 0 0 1 2.25-2.25h4.5A2.25 2.25 0 0 1 16.5 7.5V21" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 21h12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 10.5h6M9 13.5h6M9 16.5h6" />
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-extrabold text-gray-900 mb-2">Full Course Face-to-Face Practical Review</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        Hands-on practical training with step-by-step coaching, techniques, and feedback—designed to build speed, accuracy, and competence for practical exams.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         {{-- Section header --}}
-        <div class="text-center mb-12">
+        <div class="text-center mb-12 border-t border-gray-100 pt-12">
             <span class="text-brand-600 text-sm font-semibold uppercase tracking-widest">Highly Recommended</span>
-            <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-4 tracking-tight">Featured Review Packages</h2>
-            <p class="text-lg text-gray-500 max-w-2xl mx-auto">Our most popular bundles offering complete preparation. Looking for individual subjects or practical-only courses? View all programs on our enrollment page.</p>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mt-2 tracking-tight">Featured Review Packages</h2>
+            <p class="text-base text-gray-500 max-w-xl mx-auto mt-2">Our most popular bundles offering complete preparation.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -185,7 +246,7 @@
 {{-- ════════════════════════════════════════
     WHY CHOOSE US
 ════════════════════════════════════════ --}}
-<section class="py-20 md:py-28 bg-white border-y border-gray-100">
+<section class="py-20 md:py-28 bg-white" id="about">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-16">
             <span class="text-accent-600 text-sm font-semibold uppercase tracking-widest">The DMF Advantage</span>
@@ -226,7 +287,7 @@
 {{-- ════════════════════════════════════════
     TESTIMONIALS
 ════════════════════════════════════════ --}}
-<section class="bg-white border-t border-gray-100 py-16 md:py-20" id="about">
+<section class="bg-gray-50 py-16 md:py-20" id="stories">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <span class="text-brand-600 text-sm font-semibold uppercase tracking-widest">Success Stories</span>
@@ -267,7 +328,7 @@
 {{-- ════════════════════════════════════════
     FINAL CTA SECTION
 ════════════════════════════════════════ --}}
-<section class="py-16 md:py-24">
+<section class="bg-white py-16 md:py-24">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div class="bg-gradient-to-br from-brand-800 to-brand-950 rounded-3xl p-10 md:p-14 shadow-card relative overflow-hidden border border-brand-700/50">
             {{-- Decorative circles --}}

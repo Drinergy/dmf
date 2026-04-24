@@ -44,7 +44,7 @@ textarea:focus {
 }
 .feature-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(13, 141, 232, 0.12);
+    box-shadow: 0 8px 32px rgba(76, 110, 187, 0.14);
 }
 
 /* Program card hover */
@@ -53,8 +53,8 @@ textarea:focus {
 }
 .program-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 28px rgba(13, 141, 232, 0.10);
-    border-color: #0d8de8;
+    box-shadow: 0 10px 32px rgba(43, 57, 103, 0.12);
+    border-color: #9db4e1;
 }
 
 /* Stat counter tabular nums */

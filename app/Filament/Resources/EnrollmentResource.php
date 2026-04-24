@@ -73,9 +73,11 @@ class EnrollmentResource extends Resource
                             Infolists\Components\TextEntry::make('facebook_messenger_name')
                                 ->label('Facebook / Messenger Name')
                                 ->icon('heroicon-o-link')
-                                ->url(fn (Enrollment $record): ?string => Str::of((string) $record->facebook_messenger_url)->trim()->isNotEmpty()
-                                    ? (string) $record->facebook_messenger_url
-                                    : null)
+                                ->url(function (Enrollment $record): ?string {
+                                    $url = Str::of((string) $record->facebook_messenger_url)->trim();
+
+                                    return $url->isNotEmpty() ? (string) $url : null;
+                                })
                                 ->openUrlInNewTab()
                                 ->placeholder('—')
                                 ->columnSpanFull()
