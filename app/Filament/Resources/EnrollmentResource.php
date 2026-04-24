@@ -249,7 +249,7 @@ class EnrollmentResource extends Resource
                     ->alignment(Alignment::Start),
 
                 Tables\Columns\TextColumn::make('purchasable_name_snapshot')
-                    ->label('Purchased item')
+                    ->label('Program')
                     ->description(fn ($record) => match ($record->payment_type) {
                         'full' => 'Full payment',
                         'downpayment' => 'Downpayment',
