@@ -3,7 +3,9 @@
 @section('title', 'DMF Dental Training Center — Dentistry Board Exam Review Program')
 @section('meta_description', 'Enroll in our Dentistry Board Exam Review Program. High passing rates, expert faculty, and flexible online & face-to-face schedules.')
 
-
+@section('head')
+    <script>document.documentElement.classList.add('land-scroll-anim')</script>
+@endsection
 
 @section('content')
 
@@ -24,12 +26,12 @@
             <div class="flex-1 text-center lg:text-left">
 
                 {{-- Badge --}}
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-800/50 text-accent-300 text-xs font-semibold uppercase tracking-widest mb-6 border border-brand-700 backdrop-blur-sm">
+                <span class="land-hero-1 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-800/50 text-accent-300 text-xs font-semibold uppercase tracking-widest mb-6 border border-brand-700 backdrop-blur-sm">
                     <span class="w-1.5 h-1.5 rounded-full bg-accent-500 animate-pulse"></span>
                     2026 Enrollment Now Open
                 </span>
 
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight mb-6">
+                <h1 class="land-hero-2 text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight mb-6">
                     Your Pathway to
                     <span class="text-accent-400 relative">
                         Dental Excellence
@@ -39,12 +41,12 @@
                     </span>
                 </h1>
 
-                <p class="text-lg text-brand-100 font-light leading-relaxed max-w-xl mx-auto lg:mx-0 mb-8 opacity-90">
+                <p class="land-hero-3 text-lg text-brand-100 font-light leading-relaxed max-w-xl mx-auto lg:mx-0 mb-8 opacity-90">
                     Join thousands of successful dentists who trusted DMF Dental Training Center to guide them to success in the dentistry boards.
                 </p>
 
                 {{-- CTAs --}}
-                <div class="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                <div class="land-hero-4 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                     <a href="{{ url('/enroll') }}"
                        id="hero-enroll-btn"
                        class="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-accent-500 text-brand-950 font-extrabold rounded-xl shadow-[0_4px_14px_0_rgba(250,178,27,0.39)] hover:bg-accent-400 hover:shadow-[0_6px_20px_rgba(250,178,27,0.23)] active:scale-[0.98] transition-all duration-200 text-base">
@@ -58,7 +60,7 @@
                 </div>
 
                 {{-- Social proof --}}
-                <div class="mt-8 flex items-center justify-center lg:justify-start gap-3">
+                <div class="land-hero-5 mt-8 flex items-center justify-center lg:justify-start gap-3">
                     <div class="flex -space-x-2">
                         @foreach(['bg-pink-400','bg-purple-400','bg-amber-400','bg-teal-400'] as $color)
                         <span class="w-8 h-8 rounded-full {{ $color }} ring-2 ring-white flex items-center justify-center text-white text-xs font-bold">
@@ -74,8 +76,8 @@
 
             {{-- Right: Stats card --}}
             <div class="flex-shrink-0 w-full max-w-sm lg:max-w-xs">
-                <div class="bg-white rounded-2xl shadow-card border border-gray-100 p-6 space-y-5">
-                    <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-widest">Why DMF Dental?</h3>
+                <div class="land-hero-6 bg-white rounded-2xl shadow-card border border-gray-100 p-6 space-y-5">
+                    <h3 class="text-sm font-bold text-accent-600 uppercase tracking-widest">Why DMF Dental?</h3>
 
                     @php
                     $stats = [
@@ -123,12 +125,12 @@
 
         {{-- Program descriptions (separate section) --}}
         <div class="mb-12">
-            <div class="text-center mb-6">
-                <span class="text-brand-600 text-xs font-semibold uppercase tracking-widest">Program Overview</span>
-                <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mt-2 tracking-tight">What these programs cover</h2>
+            <div class="land-reveal text-center mb-6">
+                <span class="text-sm font-semibold uppercase tracking-widest text-brand-600">Programs Offered</span>
+                <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 mt-2">What these programs cover</h2>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="land-stagger grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="rounded-2xl border border-gray-100 shadow-soft bg-white p-6">
                     <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center mb-4">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -137,9 +139,38 @@
                         </svg>
                     </div>
                     <h3 class="text-base font-extrabold text-gray-900 mb-2">Hybrid Face-to-Face Intensive Lecture Review</h3>
-                    <p class="text-sm text-gray-600 leading-relaxed">
-                        A structured lecture series with high-yield discussions, drills, and guidance—combining in-person sessions with online support to strengthen foundations and exam readiness.
-                    </p>
+                    <ul class="space-y-2.5 text-sm text-gray-600 leading-relaxed" role="list">
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>The majority of classes are face to face; a few sessions are held online, depending on lecturer availability.</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>Handouts are given at the venue.</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>Whole-day lectures, with a short quiz at the end of each session.</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span><span class="font-semibold text-gray-800">Free: </span>Online pre-board exam (3 days)</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span><span class="font-semibold text-gray-800">Free: </span>DMF shirt</span>
+                        </li>
+                    </ul>
                 </div>
 
                 <div class="rounded-2xl border border-gray-100 shadow-soft bg-white p-6">
@@ -149,10 +180,68 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3.75h10.5A2.25 2.25 0 0 1 19.5 6v12a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 18V6a2.25 2.25 0 0 1 2.25-2.25Z" />
                         </svg>
                     </div>
+                    <h3 class="text-base font-extrabold text-gray-900 mb-2">Online Comprehensive Lecture Review</h3>
+                    <ul class="space-y-2.5 text-sm text-gray-600 leading-relaxed" role="list">
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent-50 text-accent-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>Detailed discussion of all board exam subjects</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent-50 text-accent-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>A slower, thorough pace with up to 4 hours per session, so you have time to absorb the material</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent-50 text-accent-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>Review book shipped to your address</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent-50 text-accent-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span><span class="font-semibold text-gray-800">Free: </span>Online pre-board exam (3 days)</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="rounded-2xl border border-gray-100 shadow-soft bg-white p-6">
+                    <div class="w-12 h-12 rounded-2xl bg-violet-50 text-violet-700 flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                        </svg>
+                    </div>
                     <h3 class="text-base font-extrabold text-gray-900 mb-2">Online Final Coaching</h3>
-                    <p class="text-sm text-gray-600 leading-relaxed">
-                        Final stretch coaching with guided recalls, test-taking strategies, and focused Q&amp;A. Best for sharpening confidence and timing right before the boards.
-                    </p>
+                    <ul class="space-y-2.5 text-sm text-gray-600 leading-relaxed" role="list">
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>Purely Q&amp;A with rationalization, including new question sets and past board exam questions (BEQs)</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>Access to video recordings of sessions if you are unable to join the live discussion</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>Test-taking and exam-answering strategies to support the way you work through questions</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span><span class="font-semibold text-gray-800">Free: </span>Online pre-board examination</span>
+                        </li>
+                    </ul>
                 </div>
 
                 <div class="rounded-2xl border border-gray-100 shadow-soft bg-white p-6">
@@ -164,21 +253,44 @@
                         </svg>
                     </div>
                     <h3 class="text-base font-extrabold text-gray-900 mb-2">Full Course Face-to-Face Practical Review</h3>
-                    <p class="text-sm text-gray-600 leading-relaxed">
-                        Hands-on practical training with step-by-step coaching, techniques, and feedback—designed to build speed, accuracy, and competence for practical exams.
-                    </p>
+                    <ul class="space-y-2.5 text-sm text-gray-600 leading-relaxed" role="list">
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>2 days of detailed online discussion</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>13 days of whole-day, hands-on training with topnotch lecturers</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span>2 whole days of practical pre-board exam</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600" aria-hidden="true">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+                            </span>
+                            <span><span class="font-semibold text-gray-800">Included: </span>DMF shirt and CD kit</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
 
         {{-- Section header --}}
-        <div class="text-center mb-12 border-t border-gray-100 pt-12">
-            <span class="text-brand-600 text-sm font-semibold uppercase tracking-widest">Highly Recommended</span>
-            <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mt-2 tracking-tight">Featured Review Packages</h2>
+        <div class="land-reveal text-center mb-12 border-t border-gray-100 pt-12">
+            <span class="text-sm font-semibold uppercase tracking-widest text-brand-600">Highly Recommended</span>
+            <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 mt-2">Featured Review Packages</h2>
             <p class="text-base text-gray-500 max-w-xl mx-auto mt-2">Our most popular bundles offering complete preparation.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="land-stagger grid grid-cols-1 md:grid-cols-3 gap-6">
             @php
                 // Display only the first 3 packages from the main category
                 $topPackages = ($packages ?? collect())->take(3);
@@ -232,7 +344,7 @@
             @endforeach
         </div>
 
-        <div class="text-center mt-12 md:mt-16">
+        <div class="land-reveal text-center mt-12 md:mt-16">
             <p class="text-gray-500 mb-5 text-sm md:text-base">Looking for individual subjects, practicals, or online-only courses?</p>
             <a href="{{ url('/enroll') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-brand-950 text-white font-bold rounded-xl shadow-md hover:bg-brand-800 hover:shadow-lg transition-all text-sm md:text-base group">
                 View All Programs & Enroll
@@ -248,13 +360,13 @@
 ════════════════════════════════════════ --}}
 <section class="py-20 md:py-28 bg-white" id="about">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-            <span class="text-accent-600 text-sm font-semibold uppercase tracking-widest">The DMF Advantage</span>
-            <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-4 tracking-tight">Why Choose DMF Dental?</h2>
-            <p class="text-lg text-gray-500">We provide the most comprehensive, intensive, and results-driven training programs in the country to ensure your success.</p>
+        <div class="land-reveal text-center max-w-3xl mx-auto mb-16">
+            <span class="text-sm font-semibold uppercase tracking-widest text-accent-600">The DMF Advantage</span>
+            <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 mt-2 mb-3">Why Choose DMF Dental?</h2>
+            <p class="text-base text-gray-500 leading-relaxed">We provide the most comprehensive, intensive, and results-driven training programs in the country to ensure your success.</p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div class="land-stagger grid grid-cols-1 md:grid-cols-3 gap-10">
             <!-- Feature 1 -->
             <div class="flex flex-col items-center text-center group">
                 <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brand-600 group-hover:text-white transition-colors duration-300 shadow-sm">
@@ -289,12 +401,12 @@
 ════════════════════════════════════════ --}}
 <section class="bg-gray-50 py-16 md:py-20" id="stories">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <span class="text-brand-600 text-sm font-semibold uppercase tracking-widest">Success Stories</span>
-            <h2 class="text-3xl font-bold text-gray-900 mt-2">What Our Graduates Say</h2>
+        <div class="land-reveal text-center mb-12">
+            <span class="text-sm font-semibold uppercase tracking-widest text-brand-600">Success Stories</span>
+            <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 mt-2">What Our Graduates Say</h2>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="land-stagger grid grid-cols-1 md:grid-cols-3 gap-6">
             @php
             $testimonials = [
                 ['name' => 'Dr. Maria Santos', 'year' => 'Board Passer 2024', 'quote' => 'DentReview gave me the structure and confidence I needed. The mock exams were spot-on — I felt completely prepared on exam day!', 'initial' => 'M', 'color' => 'bg-pink-400'],
@@ -304,18 +416,18 @@
             @endphp
 
             @foreach($testimonials as $t)
-            <div class="bg-slate-50 rounded-2xl p-6 border border-gray-100">
+            <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-soft text-slate-800">
                 <div class="flex gap-1 mb-4">
                     @for($i=0; $i<5; $i++)
                     <svg class="w-4 h-4 text-amber-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                     @endfor
                 </div>
-                <p class="text-gray-600 text-sm leading-relaxed italic mb-5">"{{ $t['quote'] }}"</p>
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full {{ $t['color'] }} flex items-center justify-center text-white text-sm font-bold">{{ $t['initial'] }}</div>
-                    <div>
-                        <p class="font-semibold text-gray-800 text-sm">{{ $t['name'] }}</p>
-                        <p class="text-xs text-gray-400">{{ $t['year'] }}</p>
+                <p class="text-slate-600 text-sm leading-relaxed italic mb-5">"{{ $t['quote'] }}"</p>
+                <div class="flex items-center gap-3 min-h-[2.5rem]">
+                    <div class="w-9 h-9 shrink-0 rounded-full {{ $t['color'] }} flex items-center justify-center text-white text-sm font-bold" aria-hidden="true">{{ $t['initial'] }}</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="testimonial-name font-semibold text-slate-900 text-sm leading-snug">{{ $t['name'] }}</p>
+                        <p class="testimonial-year text-xs text-slate-600 leading-snug mt-0.5">{{ $t['year'] }}</p>
                     </div>
                 </div>
             </div>
@@ -330,7 +442,7 @@
 ════════════════════════════════════════ --}}
 <section class="bg-white py-16 md:py-24">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div class="bg-gradient-to-br from-brand-800 to-brand-950 rounded-3xl p-10 md:p-14 shadow-card relative overflow-hidden border border-brand-700/50">
+        <div class="land-reveal bg-gradient-to-br from-brand-800 to-brand-950 rounded-3xl p-10 md:p-14 shadow-card relative overflow-hidden border border-brand-700/50">
             {{-- Decorative circles --}}
             <div class="absolute top-0 right-0 w-64 h-64 bg-accent-500/10 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
             <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/3 pointer-events-none"></div>
