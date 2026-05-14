@@ -190,10 +190,6 @@
                                 <span class="font-semibold text-gray-800 text-right">{{ $remittance['receiver_name'] ?? 'TBD' }}</span>
                             </div>
                             <div class="flex justify-between gap-4">
-                                <span class="text-gray-500">Address</span>
-                                <span class="font-semibold text-gray-800 text-right">{{ $remittance['address'] ?? 'TBD' }}</span>
-                            </div>
-                            <div class="flex justify-between gap-4">
                                 <span class="text-gray-500">Contact number</span>
                                 <span class="font-semibold text-gray-800 text-right">{{ $remittance['contact_number'] ?? 'TBD' }}</span>
                             </div>
