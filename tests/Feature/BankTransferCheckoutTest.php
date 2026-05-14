@@ -81,6 +81,7 @@ class BankTransferCheckoutTest extends TestCase
 
         $showResponse = $this->get($showUrl);
         $showResponse->assertOk();
+        $showResponse->assertDontSee('Address');
 
         $submitUrl = (string) $showResponse->viewData('submit_url');
         $this->assertNotSame('', $submitUrl);
