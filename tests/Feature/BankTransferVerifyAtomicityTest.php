@@ -105,4 +105,21 @@ class BankTransferVerifyAtomicityTest extends TestCase
         $this->assertStringNotContainsString('Tuition paid', $html);
         $this->assertStringNotContainsString('Remaining', $html);
     }
+
+    public function test_verify_payment_updates_enrollment_ledger_atomically(): void
+    {
+        [$enrollment, $payment] = $this->makeEnrollmentWithPendingBankTransfer();
+
+        $admin = User::factory()->admin()->create();
+
+        $this->assertSame(0, (int) $enrollment->fresh()->amount_paid_tuition);
+
+        app(\App\Services\BankTransferService::class)->verifyPayment($payment, $admin);
+
+        $fresh = $enrollment->fresh();
+        $this->assertSame('paid', $payment->fresh()->status);
+        $this->assertSame(21_500, (int) $fresh->amount_paid_tuition);
+        $this->assertSame(21_500, (int) $fresh->balance_tuition_due); // 43000 - 21500 = 21500 remaining
+        $this->assertSame('partially_paid', (string) $fresh->status->value);
+    }
 }
