@@ -122,4 +122,19 @@ class BankTransferVerifyAtomicityTest extends TestCase
         $this->assertSame(21_500, (int) $fresh->balance_tuition_due); // 43000 - 21500 = 21500 remaining
         $this->assertSame('partially_paid', (string) $fresh->status->value);
     }
+
+    public function test_verify_bank_transfer_action_redirects_after_success(): void
+    {
+        [$enrollment, $payment] = $this->makeEnrollmentWithPendingBankTransfer();
+
+        $admin = User::factory()->admin()->create();
+
+        Livewire::actingAs($admin)
+            ->test(PaymentsRelationManager::class, [
+                'ownerRecord' => $enrollment,
+                'pageClass' => ViewEnrollment::class,
+            ])
+            ->callTableAction('verifyBankTransfer', $payment)
+            ->assertRedirect();
+    }
 }

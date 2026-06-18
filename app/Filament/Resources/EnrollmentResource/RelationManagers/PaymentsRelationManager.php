@@ -222,13 +222,7 @@ class PaymentsRelationManager extends RelationManager
                             ->send();
                     })
                     ->after(function ($livewire): void {
-                        if (method_exists($livewire, 'resetTable')) {
-                            $livewire->resetTable();
-                        }
-
-                        if (method_exists($livewire, 'getOwnerRecord')) {
-                            $livewire->getOwnerRecord()->refresh();
-                        }
+                        $livewire->redirect(request()->fullUrl(), navigate: false);
                     }),
             ])
             ->defaultSort('paid_at', 'desc')
