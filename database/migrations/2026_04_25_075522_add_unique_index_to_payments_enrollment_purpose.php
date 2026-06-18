@@ -10,13 +10,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
-            // Replace the non-unique index with a composite unique constraint.
-            $table->dropIndex(['enrollment_id', 'purpose']);
-        });
-
+        // Add the unique constraint first so MySQL has an index to back the FK
+        // while the old non-unique index is dropped.
         Schema::table('payments', function (Blueprint $table) {
             $table->unique(['enrollment_id', 'purpose'], 'payments_enrollment_purpose_unique');
+        });
+
+        // MySQL prevents dropping an index that is the sole index backing a FK.
+        // Adding the unique index above satisfies the FK, so the drop can proceed.
+        Schema::table('payments', function (Blueprint $table) {
+            $table->dropIndex(['enrollment_id', 'purpose']);
         });
     }
 

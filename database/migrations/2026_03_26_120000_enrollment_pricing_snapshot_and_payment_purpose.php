@@ -18,9 +18,14 @@ return new class extends Migration
     public function up(): void
     {
         // ── 1. Add columns to payments ──────────────────────────────────────
+        // Guard against partial previous run (MySQL DDL is non-transactional).
         Schema::table('payments', function (Blueprint $table) {
-            $table->string('purpose', 20)->default('initial')->after('enrollment_id');
-            $table->unsignedInteger('tuition_amount')->default(0)->after('currency');
+            if (! Schema::hasColumn('payments', 'purpose')) {
+                $table->string('purpose', 20)->default('initial')->after('enrollment_id');
+            }
+            if (! Schema::hasColumn('payments', 'tuition_amount')) {
+                $table->unsignedInteger('tuition_amount')->default(0)->after('currency');
+            }
         });
 
         // Backfill: purpose = 'initial', tuition_amount = enrollments.base_amount
@@ -39,10 +44,24 @@ return new class extends Migration
                 }
             });
 
-        // Drop legacy unique constraint so one enrollment can have multiple payment rows
+        // Drop legacy unique constraint so one enrollment can have multiple payment rows.
+        // MySQL requires dropping the FK that references the unique index before the index
+        // can be dropped, then the FK is re-added.
+        if (DB::getDriverName() === 'mysql') {
+            Schema::table('payments', function (Blueprint $table) {
+                $table->dropForeign(['enrollment_id']);
+            });
+        }
+
         Schema::table('payments', function (Blueprint $table) {
             $table->dropUnique(['enrollment_id']);
         });
+
+        if (DB::getDriverName() === 'mysql') {
+            Schema::table('payments', function (Blueprint $table) {
+                $table->foreign('enrollment_id')->references('id')->on('enrollments')->onDelete('cascade');
+            });
+        }
 
         Schema::table('payments', function (Blueprint $table) {
             $table->index(['enrollment_id', 'purpose']);
